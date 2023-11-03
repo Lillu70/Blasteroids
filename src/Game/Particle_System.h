@@ -45,9 +45,10 @@ static Particle_System particle_system = Particle_System();
 
 static inline void particle_system_clear();
 
-static void particle_system_emit(v2f source_position, 
-								 Emission_Cone cone, 
-								 Particle_Defination* pd, 
-								 u32 count);
+static void particle_system_emit(
+	v2f source_position, 
+	Emission_Cone cone, 
+	Particle_Defination* pd, 
+	u32 count);
 
 static void particle_system_update_and_draw(Pixel_Canvas* canvas, f32 delta_time, f64 game_time, u32 background_color);
