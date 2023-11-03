@@ -75,15 +75,13 @@ f32 Threat_Pizza::get_safest_direction(f32 start_angle)
 	if(eval1 < eval2)
 	{
 		//if(threat)
-		//	*threat = l_safest;
-		
+		// *threat = l_safest;
 		return l_result;
 	}
 	else
 	{
 		//if(threat)
-		//	*threat = r_safest;
-		
+		// *threat = r_safest;
 		return r_result;
 	}
 }
@@ -99,7 +97,7 @@ void Threat_Pizza::set_threat_level(f32 level, f32 start_angle, f32 end_angle, f
 	start_angle = radian_wrap2(start_angle);
 	end_angle = radian_wrap2(end_angle);
 	middle_angle = radian_wrap2(middle_angle);
-
+	
 	
 	f32 turn_distance_0;
 	f32 turn_distance_1;
@@ -133,41 +131,41 @@ static v2f pick_enemy_target_location(v2f position, f32 desired_velocity)
 	// Or just pick a random spot and let the threat detection code take care of this.
 	
 	v2f result;
-
-    f32 ship_half_width = 20;
-    static constexpr u32 max_attemps = 10;
-    static constexpr f32 min_d = 300;
-    static constexpr f32 max_d = 1200;
-    
+	
+	f32 ship_half_width = 20;
+	static constexpr u32 max_attemps = 10;
+	static constexpr f32 min_d = 300;
+	static constexpr f32 max_d = 1200;
+	
 	for(u32 attempt = 0; attempt < max_attemps; ++attempt)
-    {
+	{
 		{
 			f32 a = game.rm.random_f32() * TAU32;
 			f32 d = 100 + game.rm.random_f32() * max_d;
-
+			
 			result = { cosf(a) * d, sinf(a) * d };
 			clamp_position_to_rect(&result, canvas.m_dimensions.As<i32>());
 		}
-
+		
 		v2f diff = result - position;
 		v2f heading = normalize(diff);
 		v2f left = { heading.y, -heading.x };
 		v2f right = { -heading.y, heading.x };
-
+		
 		v2f lenght = heading * desired_velocity * 1;
 		f32 md = magnitude(diff);
 		f32 ml = magnitude(lenght);
 		if(ml > md)
 			lenght = heading * md;
-	
+		
 		static constexpr u32 roi_mesh_p_count = 4;
 		v2f roi_mesh[roi_mesh_p_count];
 		build_rect_mesh(left, right, lenght, &roi_mesh[0]);
 		Mesh roi_actual_mesh = {&roi_mesh[0], roi_mesh_p_count};
 		
-
+		
 		Rect roi_rect = create_bounding_box_from_mesh(roi_actual_mesh);
-
+		
 		bool path_overlaps_asteroid = false;
 		for(u32 i = 0; i < game.active_entity_count; ++i)
 		{
@@ -175,23 +173,23 @@ static v2f pick_enemy_target_location(v2f position, f32 desired_velocity)
 			
 			if(entity->type != Entity_Type::asteroid)
 				continue;
-
+			
 			Asteroid* asteroid = entity->retrive_internal<Asteroid>();
 			
 			bool bb_overlap = rects_overlap(position, roi_rect, entity->position, asteroid->bounding_box);
-	
+			
 			if(bb_overlap && meshes_overlap(entity->position, asteroid->mesh(), position, roi_actual_mesh))
 			{
 				path_overlaps_asteroid = true;
 				break;
 			}
 		}
-	
+		
 		if(!path_overlaps_asteroid)
 			break;
 	}
-
-    return result;
+	
+	return result;
 }
 
 
@@ -270,12 +268,13 @@ static void threat_map_add_asteroid(Entity* entity, Threat_Map_Element* map, u32
 }
 
 
-static f32 add_threat_element_to_pizza(Threat_Pizza* pizza, 
-										Threat_Map_Element* threat, 
-										f32 ship_size, 
-										v2f threat_mesh_origin,
-										v2f* threat_mesh,
-										v2f ship_position)
+static f32 add_threat_element_to_pizza(
+	Threat_Pizza* pizza, 
+	Threat_Map_Element* threat, 
+	f32 ship_size, 
+	v2f threat_mesh_origin,
+	v2f* threat_mesh,
+	v2f ship_position)
 {
 	
 	f32 distance_to_threat = distance(ship_position, threat->position);
@@ -432,7 +431,7 @@ static void check_for_enemy_AI_Interupt(Entity* enemy_ship, Threat_Map_Element* 
 		{
 			velocity_bb_overlap = rects_overlap(ship_velocity_rect, threat_rect);
 			velocity_vs_asteroid = velocity_bb_overlap && 
-									meshes_overlap2(enemy_ship->position, velocity_actual_mesh, 0, threat_actual_mesh);
+			meshes_overlap2(enemy_ship->position, velocity_actual_mesh, 0, threat_actual_mesh);
 		}
 		
 		bool ship_vs_asteroid = false;
@@ -449,12 +448,14 @@ static void check_for_enemy_AI_Interupt(Entity* enemy_ship, Threat_Map_Element* 
 		if(in_threat_area)
 		{
 			has_threat = true;
-			f32 _distance = add_threat_element_to_pizza(&pizza, 
-														threat, 
-														ship_size, 
-														0,
-														&threat_mesh[0], 
-														enemy_ship->position);
+			f32 _distance = add_threat_element_to_pizza(
+				&pizza, 
+				threat, 
+				ship_size, 
+				0,
+				&threat_mesh[0], 
+				enemy_ship->position);
+			
 			if(_distance < distance_to_threat)
 			{
 				distance_to_threat = _distance;
@@ -524,21 +525,23 @@ static void check_for_enemy_AI_Interupt(Entity* enemy_ship, Threat_Map_Element* 
 					
 					bool bb_overlap = rects_overlap(new_velocity_rect, threat_mesh->threat_rect);
 					
-					bool evade_vs_asteroid = bb_overlap && meshes_overlap2(enemy_ship->position,
-										  {&velocity_mesh[0], velocity_mesh_p_count},
-										  0,
-										  {&threat_mesh->points[0], threat_mesh_p_count});
+					bool evade_vs_asteroid = bb_overlap && meshes_overlap2(
+						enemy_ship->position,
+						{&velocity_mesh[0], velocity_mesh_p_count},
+						0,
+						{&threat_mesh->points[0], threat_mesh_p_count});
 										  
 					
 					if(evade_vs_asteroid)
 					{	
 						direction_is_dangerous = true;			
-						f32 _distance = add_threat_element_to_pizza(&pizza, 
-									threat_mesh->threat, 
-									ship_size, 
-									0,
-									&threat_mesh->points[0], 
-									enemy_ship->position);
+						f32 _distance = add_threat_element_to_pizza(
+							&pizza, 
+							threat_mesh->threat, 
+							ship_size, 
+							0,
+							&threat_mesh->points[0], 
+							enemy_ship->position);
 						
 						if(_distance < distance_to_threat)
 						{
@@ -672,10 +675,10 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 	
 	
 	static constexpr f32 still_threshold = 4.f;
-    static constexpr u32 max_iter = 3;
-    AI::State _state = ai->state;
-    for(u32 iter = 0; iter < max_iter; ++iter)
-    {
+	static constexpr u32 max_iter = 3;
+	AI::State _state = ai->state;
+	for(u32 iter = 0; iter < max_iter; ++iter)
+	{
 		switch(ai->state)
 		{
 			case AI::State::evasive_manuvers:
@@ -691,7 +694,6 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 					}
 				}
 				
-				 
 				v2f p2 = e_ship_entity->position + v2f( cosf(ai->evade_direction) * 300, sinf(ai->evade_direction) *  300 );
 				AIV_Call(canvas.draw_line(e_ship_entity->position.As<i32>(), p2.As<i32>(), YELLOW);)
 				
@@ -721,7 +723,6 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 				bool can_thrust = !(mv >= ai->desired_velocity_magnitude && ai->threat_towards_velocity == F32_MAX);
 				if((d2 > d1 || d0 < 1.f) && can_thrust)
 					ship->input.apply_thrust = true;
-				
 			}break;
 			
 			case AI::State::fire_and_stay:
@@ -732,7 +733,7 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 					ai->next_state = AI::State::fire_and_stay;
 					break;
 				}
-
+				
 				if(target_entity)
 				{
 					v2f position = e_ship_entity->position;
@@ -752,7 +753,7 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 					}
 					
 					turn_ship_towards_angle(target_angle + PI32, ship, game.update_tick);
-
+					
 					f32 eval1 = radian_wrap(abs(ship->orientation - (target_angle + HALF_PI32)));
 					if(eval1 < PI32 / 12)
 						ship->input.shoot = true;
@@ -761,9 +762,9 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 				f64 time_in_state = game.game_time - ai->state_start_time;
 				if(time_in_state > 3.f)
 					ai->set_state(AI::State::none, game.game_time);
-			
-			}break;
 				
+			}break;
+			
 			case AI::State::face_movement_target:
 			{
 				f32 angle = angle_between_points(ai->target_position, e_ship_entity->position);
@@ -775,13 +776,13 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 					ai->next_state = _state;
 				}
 			}break;
-				
+			
 			case AI::State::accelerate_towards_target:
 			{
 				f32 mv = magnitude(e_ship_entity->velocity);
 				if(mv < ai->desired_velocity_magnitude)
 					ship->input.apply_thrust = true;
-
+				
 				else if(target_entity)
 				{
 					f32 target_angle = angle_between_points(e_ship_entity->position, target_entity->position);
@@ -789,14 +790,14 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 					f32 angle_to_target = radian_wrap(abs(ship->orientation - (target_angle + PI32 * 0.5f)));
 					
 					if(angle_to_target < PI32 / 12)
-						ship->input.shoot = true;
+					ship->input.shoot = true;
 				}
 				
 				f32 turn_distance;
 				f32 heading_angle = ship->orientation + HALF_PI32;
 				f32 inverterd_velocity_angle = atan2f(e_ship_entity->velocity.y * -1, e_ship_entity->velocity.x * -1);
 				get_turn_direction_to_face_target(heading_angle, inverterd_velocity_angle, turn_distance);
-
+				
 				f32 eval1 = distance(e_ship_entity->position, ai->target_position) / mv;
 				f32 eval2 = (mv * 0.5f / ship->acceleration_speed) + (turn_distance / ship->turn_speed);
 				if(eval1 < eval2)
@@ -805,7 +806,7 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 					ai->set_state(AI::State::slow_down, game.game_time);
 				}
 			}break;
-
+			
 			case AI::State::slow_down:
 			{
 				f32 mv = magnitude(e_ship_entity->velocity); 
@@ -819,16 +820,14 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 					f32 target_angle = atan2f((e_ship_entity->velocity.y * -1),(e_ship_entity->velocity.x * -1));
 					if(turn_ship_towards_angle(target_angle, ship, game.update_tick) < 0.0001)
 						ship->input.apply_thrust = true;			
-				}
-					
+				}	
 			}break;
 			
 			case AI::State::do_nothing:
-				break;
+			break;
 			
 			default:
 			{
-				
 				u32 r = game.rm.random_u32(100);
 				
 				if(!point_inside_rect(e_ship_entity->position, canvas.m_dimensions) || r < 30)
@@ -840,11 +839,10 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 				{
 					ai->set_state(AI::State::fire_and_stay, game.game_time);
 				}
-				   
 			}
 			
 		} 
-
+		
 		if(ai->state != _state)
 		{
 			_state = ai->state;
@@ -853,7 +851,6 @@ static inline void handle_enemy_AI(Entity* e_ship_entity)
 		{
 			break;
 		}
-	 
-    }
+	}
 }
 
