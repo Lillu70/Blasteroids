@@ -63,29 +63,29 @@ struct v2
 	}
 	
 	v2<T> operator * (const v2<T>& other)	const	{ return { x * other.x, y * other.y };	}
-	v2<T> operator * (const T& comp)		const	{ return { x * comp,	y * comp    };	}
+	v2<T> operator * (const T& comp)	const	{ return { x * comp,	y * comp    };	}
 	v2<T> operator / (const v2<T>& other)	const	{ return { x / other.x, y / other.y };	}
-	v2<T> operator / (const T& comp)		const	{ return { x / comp,	y / comp    };	}
+	v2<T> operator / (const T& comp)	const	{ return { x / comp,	y / comp    };	}
 	v2<T> operator + (const v2<T>& other)	const	{ return { x + other.x, y + other.y };	}
-	v2<T> operator + (const T& comp)		const	{ return { x + comp,	y + comp    };	}
+	v2<T> operator + (const T& comp)	const	{ return { x + comp,	y + comp    };	}
 	v2<T> operator - (const v2<T>& other)	const	{ return { x - other.x, y - other.y };	}
-	v2<T> operator - (const T& comp)		const	{ return { x - comp,	y - comp    };	}
-	v2<T> operator - ()						const	{ return { x * -1, y * -1};				}
+	v2<T> operator - (const T& comp)	const	{ return { x - comp,	y - comp    };	}
+	v2<T> operator - ()			const	{ return { x * -1, y * -1};		}
 	
 	bool operator != (const v2<T>& other)	const	{ return (x != other.x || y != other.y);}
 	bool operator == (const v2<T>& other)	const	{ return (x == other.x && y == other.y);}
 	
-	void operator = (const v2<T>& other)			{ x = other.x; y = other.y;				}
-	void operator = (const T comp)					{ x = comp; y = comp;					}
+	void operator = (const v2<T>& other)	{ x = other.x; y = other.y;			}
+	void operator = (const T comp)		{ x = comp; y = comp;				}
 	
-	void operator *= (const v2<T>& other)			{ x *= other.x; y *= other.y;			}
-	void operator *= (const T& comp)				{ x *= comp; y *= comp;		      		}
-	void operator /= (const v2<T>& other)			{ x /= other.x; y /= other.y;			}
-	void operator /= (const T& comp)				{ x /= comp; y /= comp;	       			}
-	void operator += (const v2<T>& other)			{ x += other.x; y += other.y;			}
-	void operator += (const T& comp)				{ x += comp; y += comp;					}
-	void operator -= (const v2<T>& other)			{ x -= other.x; y -= other.y;			}
-	void operator -= (const T& comp)				{ x -= comp; y -= comp;					}
+	void operator *= (const v2<T>& other)	{ x *= other.x; y *= other.y;			}
+	void operator *= (const T& comp)	{ x *= comp; y *= comp;		      		}
+	void operator /= (const v2<T>& other)	{ x /= other.x; y /= other.y;			}
+	void operator /= (const T& comp)	{ x /= comp; y /= comp;	       			}
+	void operator += (const v2<T>& other)	{ x += other.x; y += other.y;			}
+	void operator += (const T& comp)	{ x += comp; y += comp;				}
+	void operator -= (const v2<T>& other)	{ x -= other.x; y -= other.y;			}
+	void operator -= (const T& comp)	{ x -= comp; y -= comp;				}
 };
 	
 	
