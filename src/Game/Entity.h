@@ -4,11 +4,11 @@
 enum class Entity_Type : u32
 {
 	none = 0,
-    player_ship,
-    enemy_ship,
-    asteroid,
-    bullet,
-    pickup,
+	player_ship,
+	enemy_ship,
+	asteroid,
+	bullet,
+	pickup,
 };
 
 
@@ -21,10 +21,9 @@ enum class Entity_Flags : u8
 
 enum class Size : u8
 {
-    small = 0,
-    medium,
-    large,
-    
+	small = 0,
+	medium,
+	large,
 };
 
 
@@ -40,8 +39,7 @@ struct Entity
 	
 	static constexpr u32 max_data = 32;
 	u8 data[max_data] = {0};
-
-
+	
 	template<typename T>
 	T* alloc_external(General_Allocator* mem)
 	{
@@ -84,7 +82,7 @@ struct Entity
 		T* result = (T*)&data[0];
 		return result;
 	}
-	
+
 };
 
 
