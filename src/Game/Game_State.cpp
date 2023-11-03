@@ -68,10 +68,10 @@ static bool find_entity_by_id(u32 entity_id, Entity** out_entity)
 
 static inline void add_timed_event(Timed_Event event)
 {
-    Assert(game.timed_event_count < game.max_timed_event_count);
-    
+	Assert(game.timed_event_count < game.max_timed_event_count);
+	
 	game.timed_events[game.timed_event_count] = event;
-    game.timed_event_count += 1;
+	game.timed_event_count += 1;
 }
 
 
@@ -79,13 +79,13 @@ static inline void add_timed_event(Timed_Event event)
 static Player* find_ship_owner(Ship* ship)
 {
 	Assert(ship);
-	    
-    for(u32 i = 0; i < game.active_player_count; ++i)
-    	if(game.player_table[i].ship == ship)
+	
+	for(u32 i = 0; i < game.active_player_count; ++i)
+		if(game.player_table[i].ship == ship)
 			return &game.player_table[i];
-    
-    Terminate;
-    return 0;
+	
+	Terminate;
+	return 0;
 }
 
 
@@ -119,5 +119,4 @@ static inline void murder_entity(Entity* entity, u32 murderer_id)
 	
 	else
 		kill_entity(entity);
-
 }
