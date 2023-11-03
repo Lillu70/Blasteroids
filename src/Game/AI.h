@@ -49,12 +49,13 @@ static v2f pick_enemy_target_location(v2f position, f32 desired_velocity);
 static void threat_map_add_asteroid(Entity* entity, Threat_Map_Element* map, u32* element_count, u32 array_size);
 
 
-static f32 add_threat_element_to_pizza(Threat_Pizza* pizza, 
-										Threat_Map_Element* threat, 
-										f32 ship_size, 
-										v2f threat_mesh_origin,
-										v2f* threat_mesh,
-										v2f ship_position);
+static f32 add_threat_element_to_pizza(
+	Threat_Pizza* pizza, 
+	Threat_Map_Element* threat, 
+	f32 ship_size, 
+	v2f threat_mesh_origin,
+	v2f* threat_mesh,
+	v2f ship_position);
 
 
 static void check_for_enemy_AI_Interupt(Entity* enemy_ship, Threat_Map_Element* map, u32 map_element_count);
