@@ -1,20 +1,19 @@
 
 #pragma once
 
-
 static Weapon create_weapon(Weapon::type type)
 {
-    Weapon weapon;
-    
-    switch(type)
-    {
+	Weapon weapon;
+	
+	switch(type)
+	{
 		case Weapon::type::enemy_def:
 		{
 			weapon.ammo = 0xFFFFFFFF;
 			weapon.fire_rate = 0.7f;
 			weapon.next_fire_time = 0;
 			weapon._fire_func = fire_default_weapon;
-
+			
 			Default_Weapon_Data data;
 			data.bullet_damage = 1;
 			data.bullet_speed = 220;
@@ -28,14 +27,14 @@ static Weapon create_weapon(Weapon::type type)
 			weapon.fire_rate = 0.2f;
 			weapon.next_fire_time = 0;
 			weapon._fire_func = fire_default_weapon;
-
+			
 			Default_Weapon_Data data;
 			data.bullet_damage = 10;
 			data.bullet_speed = 500;
 			data.color_effect = 0.65f;
 			*((Default_Weapon_Data*)&weapon.data[0]) = data;
 		}break;
-
+		
 		case Weapon::type::scatter:
 		{
 			weapon.ammo = 25;
@@ -51,7 +50,7 @@ static Weapon create_weapon(Weapon::type type)
 			data.color_effect = 0.4f;
 			*((Scatter_Weapon_Data*)&weapon.data[0]) = data;
 		}break;
-
+		
 		case Weapon::type::slow_scatter:
 		{
 			weapon.ammo = 10;
@@ -67,14 +66,14 @@ static Weapon create_weapon(Weapon::type type)
 			data.color_effect = 0.4f;
 			*((Scatter_Weapon_Data*)&weapon.data[0]) = data;   
 		}break;
-
+		
 		case Weapon::type::laser:
 		{
 			weapon.ammo = 50;
 			weapon.fire_rate = 0;
 			weapon.next_fire_time = 0;
 			weapon._fire_func = fire_laser;
-
+			
 			Laser_Weapon_Data data;
 			data.damage_freq = 0.2;
 			data.laser_damage = 10;
@@ -86,11 +85,11 @@ static Weapon create_weapon(Weapon::type type)
 			Terminate;
 			return Weapon();
 		}
-    }
-
-    weapon.max_ammo = weapon.ammo;
-    weapon._type = type;
-    return weapon;
+	}
+	
+	weapon.max_ammo = weapon.ammo;
+	weapon._type = type;
+	return weapon;
 }
 
 
@@ -100,12 +99,12 @@ static void fire_default_weapon(Entity* source, v2f weapon_mount_p, f32 weapon_d
 	
 	if(game.active_entity_count >= game.max_entity_count)
 		return;
-
-    Default_Weapon_Data* weapon = (Default_Weapon_Data*)&(_weapon->data[0]);
-
-    v2f weapon_dir_vec = {sinf(weapon_dir) * -1 , cosf(weapon_dir) };
-
-    Entity* entity = add_entity(Entity_Type::bullet);
+	
+	Default_Weapon_Data* weapon = (Default_Weapon_Data*)&(_weapon->data[0]);
+	
+	v2f weapon_dir_vec = {sinf(weapon_dir) * -1 , cosf(weapon_dir) };
+	
+	Entity* entity = add_entity(Entity_Type::bullet);
 	set_inheritet_entity_flags(entity, source);
 	entity->position = weapon_mount_p;
 	entity->velocity = weapon_dir_vec * weapon->bullet_speed;
@@ -126,14 +125,14 @@ static void fire_laser(Entity* source, v2f weapon_mount_p, f32 weapon_dir, Weapo
 	pd.life_time = game.game_time + 0.2f;
 	pd.full_color = source->color;
 	
-
+	
 	Emission_Cone cone = { weapon_dir+HALF_PI32, HALF_PI32 };
 	
 	particle_system_emit(weapon_mount_p, cone, &pd, 10);
 	
 	u32 laser_count = game.active_laser_count;
-    for(u32 i = 0; i < laser_count; ++i)
-    {
+	for(u32 i = 0; i < laser_count; ++i)
+	{
 		Laser* laser = &game.laser_table[i];
 		if(laser->source_weapon == _weapon)
 		{
@@ -143,11 +142,11 @@ static void fire_laser(Entity* source, v2f weapon_mount_p, f32 weapon_dir, Weapo
 			return;
 		}
 	}
-    
+	
 	{
 		if(laser_count >= game.max_laser_count)
 			return;
-
+		
 		Laser laser = {};
 		laser.source_weapon = _weapon;
 		laser.pos = weapon_mount_p;
@@ -158,7 +157,7 @@ static void fire_laser(Entity* source, v2f weapon_mount_p, f32 weapon_dir, Weapo
 		
 		game.laser_table[laser_count] = laser;
 		game.active_laser_count += 1;
-    }
+	}
 }
 
 
@@ -167,20 +166,20 @@ static void fire_scatter_gun(Entity* source, v2f weapon_mount_p, f32 weapon_dir,
 	Assert(source);
 	
 	_weapon->ammo -= 1;
-    game.draw_ui = true;
-    Scatter_Weapon_Data* weapon = (Scatter_Weapon_Data*)&(_weapon->data[0]);
-
-    f32 step_arc = weapon->shot_arc / weapon->per_shot_pellet_count;
-
-    u32 color = multiply_accross_color_channels(source->color, weapon->color_effect);
-    for(i32 i = 0; i < weapon->per_shot_pellet_count; ++i)
-    {
+	game.draw_ui = true;
+	Scatter_Weapon_Data* weapon = (Scatter_Weapon_Data*)&(_weapon->data[0]);
+	
+	f32 step_arc = weapon->shot_arc / weapon->per_shot_pellet_count;
+	
+	u32 color = multiply_accross_color_channels(source->color, weapon->color_effect);
+	for(i32 i = 0; i < weapon->per_shot_pellet_count; ++i)
+	{
 		if(game.active_entity_count >= game.max_entity_count)
 			return;
-
+		
 		f32 pellet_dir = weapon_dir - weapon->shot_arc / 2 + step_arc * i;
 		v2f weapon_dir_vec = {sinf(pellet_dir) * -1 , cosf(pellet_dir) };
-
+		
 		
 		Entity* entity = add_entity(Entity_Type::bullet);
 		set_inheritet_entity_flags(entity, source);
@@ -189,18 +188,18 @@ static void fire_scatter_gun(Entity* source, v2f weapon_mount_p, f32 weapon_dir,
 		entity->velocity = weapon_dir_vec * weapon->pellet_speed;
 		
 		*entity->alloc_internal<Bullet>() = { source->id, source->type, weapon->pellet_damage };
-    }
+	}
 }
 
 static char get_display_char_for_weapon(Weapon::type weapon)
 {
-    switch(weapon)
-    {
+	switch(weapon)
+	{
 	case Weapon::type::scatter:
-	    return 'S';
+		return 'S';
 	case Weapon::type::laser:
-	    return 'L';
-    }
-    
-    return 'x';
+		return 'L';
+	}
+	
+	return 'x';
 }
