@@ -13,39 +13,38 @@
 
 struct Win32_App
 {
-    i32 window_width = 0, window_height = 0;
-    i32 flags = 0;
-    
-    HDC dc = 0;
-    HINSTANCE instance = 0;
-    HWND window = 0;
-
-    WINDOWPLACEMENT window_placement = { sizeof(window_placement) };
-    
-    u64 frame_counter = 0;
-    i64 timer_counter_freg = 0;
-    LARGE_INTEGER last_time_counter;
-    
-    f64 next_controler_test_time = 0;
-    
-    void* game_state_memory = 0;
-
-    inline static constexpr i32 max_controllers = 1;
-
-    Controller_State controller_state[max_controllers];
-
-    bool force_update_surface = false;
+	i32 window_width = 0, window_height = 0;
+	i32 flags = 0;
+	
+	HDC dc = 0;
+	HINSTANCE instance = 0;
+	HWND window = 0;
+	
+	WINDOWPLACEMENT window_placement = { sizeof(window_placement) };
+	
+	u64 frame_counter = 0;
+	i64 timer_counter_freg = 0;
+	LARGE_INTEGER last_time_counter;
+	
+	f64 next_controler_test_time = 0;
+	
+	void* game_state_memory = 0;
+	
+	inline static constexpr i32 max_controllers = 1;
+	
+	Controller_State controller_state[max_controllers];
+	
+	bool force_update_surface = false;
 };
 
 
 struct Win32_Bitmap
 {
-    inline static constexpr i32 bytes_per_pixel = 4;
-
-    u32* memory = nullptr;
-    i32 width = 0, height = 0;
-    BITMAPINFO info{};
-    
+	inline static constexpr i32 bytes_per_pixel = 4;
+	
+	u32* memory = nullptr;
+	i32 width = 0, height = 0;
+	BITMAPINFO info{};
 };
 
 static LRESULT win32_message_handler(HWND win_handle, UINT message, WPARAM wparam, LPARAM lParam);
