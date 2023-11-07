@@ -10,8 +10,6 @@ Gameplay clip:\
 - Rebindable controls
 - Highscore leaderboard
 - Enemies and pickups
-\
-\
 # Code Features
 - The game and UI are fully software rendered
 - Manual memory management using a custom allocator
