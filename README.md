@@ -12,4 +12,8 @@ Gameplay clip:\
 - Enemies and pickups
 \
 \
-test
+# Code Features
+- The game and UI are fully software rendered
+- Manual memory management using a custom allocator
+- GUI system supporting, keyboard, controller and mouse interaction
+- Asteroid dodging AI for the enemy ships
