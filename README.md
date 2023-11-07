@@ -18,4 +18,5 @@ Click [here](https://www.youtube.com/watch?v=vDoti8Nhkpw) to see more on YouTube
 - Asteroid dodging AI for the enemy ships.
 # TODOS
 - Sound.
+- Supporting other platforms (Windows XP or higher only atm).
 - Improved wave spawning, that get's more difficult overtime.
