@@ -4,6 +4,7 @@ Reimagination of the classic Asteroids arcade game done in C++ without the use o
 \
 Gameplay clip:\
 ![Alt Text](https://github.com/Lillu70/Blasteroids/blob/main/Page_Data/blasteroids_gamplay.gif)\
+Youtube link with more:\
 https://www.youtube.com/watch?v=vDoti8Nhkpw\
 # Gameplay Features
 - Xbox controller and keyboard support.
