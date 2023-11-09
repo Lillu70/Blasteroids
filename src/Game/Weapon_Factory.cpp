@@ -75,7 +75,7 @@ static Weapon create_weapon(Weapon::type type)
 			weapon._fire_func = fire_laser;
 			
 			Laser_Weapon_Data data;
-			data.damage_freq = 0.2;
+			data.damage_freq = 0.2f;
 			data.laser_damage = 10;
 			*((Laser_Weapon_Data*)&weapon.data[0]) = data;
 		}break;
@@ -172,7 +172,7 @@ static void fire_scatter_gun(Entity* source, v2f weapon_mount_p, f32 weapon_dir,
 	f32 step_arc = weapon->shot_arc / weapon->per_shot_pellet_count;
 	
 	u32 color = multiply_accross_color_channels(source->color, weapon->color_effect);
-	for(i32 i = 0; i < weapon->per_shot_pellet_count; ++i)
+	for(u32 i = 0; i < weapon->per_shot_pellet_count; ++i)
 	{
 		if(game.active_entity_count >= game.max_entity_count)
 			return;

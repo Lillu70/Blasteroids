@@ -520,7 +520,7 @@ static void gui_create_settings_menu(u8* back_button_name, void(*create_function
 			.on_value_change = gui_set_is_muted
 		};
 		
-		f32 side = s_gui_theme.font.char_height * text_scale;
+		f32 side = f32(s_gui_theme.font.char_height * text_scale);
 		
 		v2f dimensions = v2f{ side, side };
 		
@@ -618,7 +618,7 @@ static void gui_create_settings_menu(u8* back_button_name, void(*create_function
 			.on_value_change = gui_set_fullscreen
 		};
 		
-		f32 side = s_gui_theme.font.char_height * text_scale;
+		f32 side = f32(s_gui_theme.font.char_height * text_scale);
 		
 		v2f dimensions = v2f{ side, side };
 		

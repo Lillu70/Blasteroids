@@ -157,7 +157,7 @@ static void update_asteroids_game(f64 delta_time, bool& update_surface)
 		// Fast forward mode
 		if(platform.get_keyboard_key_down(Key_Code::T))
 		{
-			f32 real_delta = delta_time;
+			f32 real_delta = (f32)delta_time;
 			delta_time *= 5;
 			
 			game.total_pause_time -= (delta_time - real_delta);
@@ -245,7 +245,7 @@ static void start_game()
 	// Set pickup mesh
 	{
 		f32 a = TAU32 / transient.pickup_mesh.p_count;
-		for(i32 i = 0; i < transient.pickup_mesh.p_count; ++i)
+		for(u32 i = 0; i < transient.pickup_mesh.p_count; ++i)
 		{
 			transient.pickup_mesh.data[i].x = cosf(a * i - HALF_PI32) * Pickup::radius;
 			transient.pickup_mesh.data[i].y = sinf(a * i - HALF_PI32) * Pickup::radius;
@@ -258,6 +258,7 @@ static void start_game()
 	add_timed_event(Timed_Event{ game.game_time + 0.5f, Event_Type::spawn_wave});
 	add_timed_event(Timed_Event{ 0, Event_Type::spawn_pickups, 0 });	
 	#endif
+
 
 }
 
@@ -741,7 +742,7 @@ static void check_lasers_againt_targets()
 			{
 				f32 tx = vector_intersects_axis(laser_pos.x, laser_dir.x, 0);
 				if(tx < 0)
-					tx = vector_intersects_axis(laser_pos.x, laser_dir.x, canvas.m_dimensions.x);
+					tx = vector_intersects_axis(laser_pos.x, laser_dir.x, (f32)canvas.m_dimensions.x);
 				
 				t = tx;
 			}
@@ -750,7 +751,7 @@ static void check_lasers_againt_targets()
 			{
 				f32 ty = vector_intersects_axis(laser_pos.y, laser_dir.y, 0);
 				if(ty < 0)
-					ty = vector_intersects_axis(laser_pos.y, laser_dir.y, canvas.m_dimensions.y);
+					ty = vector_intersects_axis(laser_pos.y, laser_dir.y, (f32)canvas.m_dimensions.y);
 				
 				t = min(t, ty);
 			}
@@ -859,7 +860,7 @@ static void check_lasers_againt_targets()
 									hit_type = type;
 									impact = true;
 								}
-							}  
+							}
 						}
 						
 						if(!impact && line_intersection(laser_pos, closest_hit, bullet[0], bullet[1], hit))
@@ -1276,7 +1277,7 @@ static void draw_ui()
 	{
 		u32 score = 0;
 		u32 offset = 15;
-		u32 inf_ammo = 0xFFFFFFFF;
+		u32 inf_ammo = WHITE;
 		f32 ammo_percentile = 0;
 		
 		i32 player_lives = game.player_table[0].lives;
@@ -1301,7 +1302,7 @@ static void draw_ui()
 		// Draw current score
 		{
 			u8* score_text = u32_to_char_buffer(&buffer[0], sizeof(buffer), score);
-			u32 text_offset = score_text - &buffer[0];
+			u32 text_offset = u32(score_text - &buffer[0]);
 			
 			//NOTE: This only works if the scale is set to 2 on the x axis.
 			u32 char_count = (sizeof(buffer) - text_offset - 1); 
@@ -1386,7 +1387,7 @@ static Entity* spawn_player_ship(v2f pos, u32 color, f64 itime, Weapon::type wea
 	
 	ship->passed_screen = false;
 	ship->icolor = WHITE;
-	ship->itime = game.game_time + itime;
+	ship->itime = f32(game.game_time + itime);
 	ship->acceleration_speed = 200;
 	ship->turn_speed = 5;
 	
@@ -1554,7 +1555,7 @@ static Entity* create_asteroid(Size size)
 		for(i32 i = 0; i < (i32)asteroid->mesh_p_count; ++i)
 		{
 			i32 r = game.rm.random_u32(diff) + prop.min_radius;
-			v2f p = v2f{ cosf(a * i + o) , sinf(a * i + o) } * r;
+			v2f p = v2f(cosf(a * i + o), sinf(a * i + o)) * (f32)r;
 			
 			if(p.x < min_x)
 				min_x = p.x;
@@ -1642,7 +1643,7 @@ static void unpause_game_without_destroy_frame()
 
 static void record_ship_input()
 {
-	for(i32 i = 0; i < game.active_player_count; ++i)
+	for(u32 i = 0; i < game.active_player_count; ++i)
 	{    
 		Ship* ship = game.player_table[i].ship;
 		
@@ -1675,7 +1676,7 @@ static void record_ship_input()
 
 static void clear_ship_input()
 {
-	for(i32 i = 0; i < game.active_player_count; ++i)
+	for(u32 i = 0; i < game.active_player_count; ++i)
 	{
 		Ship* ship = game.player_table[i].ship;
 		if(!ship)

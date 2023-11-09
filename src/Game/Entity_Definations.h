@@ -45,7 +45,7 @@ struct Ship
 	v2f* local_mesh = 0;
 	Mesh mesh;
 	f64 next_thrust_emit_time = 0;
-	u32 itime = 0;
+	f32 itime = 0;
 	u32 icolor = 0;
 	f32 turn_speed = 0;
 	f32 acceleration_speed = 0;
