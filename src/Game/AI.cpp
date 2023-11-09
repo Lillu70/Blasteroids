@@ -25,7 +25,7 @@ inline u32 Threat_Pizza::get_threat_pizza_idx_from_angle(f32 angle)
 f32 Threat_Pizza::get_safest_direction(f32 start_angle)
 {
 	static constexpr f32 increment = TAU32 / slice_count;
-	static constexpr u32 max_steps = slice_count * 0.5f;
+	static constexpr u32 max_steps = slice_count / 2;
 	
 	f32 l_safest = 0;
 	f32 l_result;
@@ -405,8 +405,8 @@ static void check_for_enemy_AI_Interupt(Entity* enemy_ship, Threat_Map_Element* 
 	
 	for(Threat_Map_Element* threat = map; threat < map + map_element_count; ++threat)
 	{		
-		v2f r_offset = threat->ro * (threat->size + ship_size * 1.5);
-		v2f l_offset = threat->lo * (threat->size + ship_size * 1.5);
+		v2f r_offset = threat->ro * (threat->size + ship_size * 1.5f);
+		v2f l_offset = threat->lo * (threat->size + ship_size * 1.5f);
 		
 		f32 facing_factor;
 		get_turn_direction_to_face_target(atan2f(threat->nv.y, threat->nv.x), ship->orientation + HALF_PI32, facing_factor); 

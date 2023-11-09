@@ -385,7 +385,7 @@ static void gui_handle_mouse_input(GUI_Handler* handler, Platform_Call_Table* pl
 							f32 rel_cursor_x = (cursor_position.As<f32>() - (header->position - half_dim)).x;
 							f32 fill_percent = rel_cursor_x / header->dimensions.x;
 							f32 fill = (spec->max - spec->min) * fill_percent + spec->min;
-							i32 steps = round(fill / spec->step);
+							i32 steps = (i32)round(fill / spec->step);
 							
 							spec->value = steps * spec->step;
 							
@@ -531,7 +531,7 @@ static bool gui_handle_input(GUI_Handler* handler, Platform_Call_Table* platform
 			bool right_press = gui_get_action(actions, GUI_Menu_Actions::right)->is_pressed();
 			if(left_press || right_press)
 			{
-				handler->action_start_time = platform->get_time_stamp();
+				handler->action_start_time = (f32)platform->get_time_stamp();
 			}
 			
 			f32 time = (f32)platform->get_time_stamp();
@@ -694,8 +694,8 @@ static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas)
 					v2i scale = { spec->text_scale, spec->text_scale };
 					
 					v2i text_p = header->position.As<i32>();
-					text_p.x -= text_lenght * scale.x * font->char_width * 0.5f;
-					text_p.y -= scale.y * font->char_height * 0.5f;
+					text_p.x -= text_lenght * scale.x * font->char_width / 2;
+					text_p.y -= scale.y * font->char_height / 2;
 					
 					canvas->draw_text(
 						(char*)spec->text, 
@@ -717,8 +717,8 @@ static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas)
 				v2i scale = { spec->text_scale, spec->text_scale };
 				
 				v2i text_p = header->position.As<i32>();
-				text_p.x -= text_lenght * scale.x * font->char_width * 0.5f;
-				text_p.y -= scale.y * font->char_height * 0.5f;
+				text_p.x -= text_lenght * scale.x * font->char_width / 2;
+				text_p.y -= scale.y * font->char_height / 2;
 				
 				u32 color;
 				if(spec->is_title)

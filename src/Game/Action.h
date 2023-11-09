@@ -45,7 +45,7 @@ static void update_actions(Platform_Call_Table* platform, Action* actions, u32 c
 	
 	u64 frame = platform->get_frame_count();
 	
-	for(i32 i = 0; i < count; ++i)
+	for(u32 i = 0; i < count; ++i)
 	{
 		Action* action = actions + i;
 		

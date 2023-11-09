@@ -72,9 +72,9 @@ static void particle_system_update_and_draw(
 	
 			else
 			{
-				f32 f1 = particle->life_time - particle->fade_start_time;
-				f32 f2 = game.game_time - particle->fade_start_time;
-				f32 f3 = 1.0 - ( f2 / f1 );
+				f32 f1 = f32(particle->life_time - particle->fade_start_time);
+				f32 f2 = f32(game.game_time - particle->fade_start_time);
+				f32 f3 = 1.0f - ( f2 / f1 );
                 
 				color = multiply_accross_color_channels(particle->full_color, background_color, f3);
 			}

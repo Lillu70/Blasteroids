@@ -21,7 +21,7 @@ static u32 null_terminated_buffer_lenght(u8* buffer)
 {
 	u8* b;
 	for(b = buffer; *b != 0; ++b){}
-	return b - buffer;
+	return u32(b - buffer);
 }
 
 b32 is_flag_set(u32 field, u32 shift)

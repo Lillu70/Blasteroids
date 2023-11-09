@@ -9,7 +9,7 @@
 
 static void rotate_mesh(v2f* ref, v2f* mesh, u32 p_count, f32 cos, f32 sin)
 {
-	for(i32 i = 0; i < p_count; ++i)
+	for(u32 i = 0; i < p_count; ++i)
 		mesh[i] = rotate_point(ref[i], cos, sin);
 }
 
@@ -19,14 +19,14 @@ static void rotate_local_mesh(v2f* local_mesh, Mesh mesh, f32 new_orientation)
 	f32 cos = cosf(new_orientation);
 	f32 sin = sinf(new_orientation);
 	
-	for(i32 i = 0; i < mesh.p_count; ++i)
+	for(u32 i = 0; i < mesh.p_count; ++i)
 		local_mesh[i] = rotate_point(mesh.data[i], cos, sin);
 }
 
 
 static void rotate_local_mesh(v2f* local_mesh, Mesh mesh, f32 cos, f32 sin)
 {
-	for(i32 i = 0; i < mesh.p_count; ++i)
+	for(u32 i = 0; i < mesh.p_count; ++i)
 		local_mesh[i] = rotate_point(mesh.data[i], cos, sin);
 }
 

@@ -22,7 +22,7 @@ What to do in the .cpp file
 	- If the widget has internal state, add an entry inte "gui_clear_widget_state" function.
 
 	- If the widget needs special mouse behavior, 
-    		add an entry in the "gui_handle_mouse_input" function.
+		add an entry in the "gui_handle_mouse_input" function.
 	
 	- Add an entry in the "gui_draw_widgets" function.
 
@@ -187,6 +187,7 @@ struct GUI_Checkbox
 	GUI_Checkbox_Spec spec = GUI_Checkbox_Spec();
 	
 	bool is_pressed = 0;
+
 };
 
 
@@ -240,9 +241,9 @@ struct GUI_Handler
 	
 	GUI_Widget_Header* first_header = 0;
 	GUI_Widget_Header* last_header = 0;
-	
+
 	bool cursor_on_selection = false;
-	
+
 	static inline bool select_has_been_in_up_state = false;
 };
 
@@ -257,8 +258,7 @@ static void gui_push_frame(
 	u32 menu_memory_size,
 	void(*on_back_action)(),
 	void(*on_frame_close)() = 0);
-    
-    
+
 static void gui_pop_frame(GUI_Handler* handler, Platform_Call_Table* platform, General_Allocator* mem_arena);
 
 
@@ -340,6 +340,6 @@ static GUI_Widget_Header* gui_add_text(
 	v2f* position, 
 	v2f* dimensions, 
 	GUI_Link_Direction ld= GUI_Link_Direction::up);
- 
- 
+
+
 static GUI_Widget_Header* gui_add_key_listener(GUI_Handler* handler, GUI_Key_Listener_Spec* spec);

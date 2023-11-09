@@ -76,7 +76,7 @@ void Pixel_Canvas::draw_line(v2i p1, v2i p2, u32 color)
 		for (i32 x = 0; x <= xlen; ++x)
 		{
 			v2i p = { p1.x + x, p1.y + (i32)(m * x)};
-			if(p.x < 0 || p.y < 0 || p.y >= m_dimensions.y || p.x >= m_dimensions.x)
+			if(p.x < 0 || p.y < 0 || p.y >= (i32)m_dimensions.y || p.x >= (i32)m_dimensions.x)
 				continue;
 			
 			m_pixels[p.y * m_dimensions.x + p.x] = color;
@@ -86,7 +86,7 @@ void Pixel_Canvas::draw_line(v2i p1, v2i p2, u32 color)
 		{
 			v2i p = {p1.x + (i32)(y / m), p1.y + y};
 			
-			if(p.x < 0 || p.y < 0 || p.x >= m_dimensions.x || p.y >= m_dimensions.y)
+			if(p.x < 0 || p.y < 0 || p.x >= (i32)m_dimensions.x || p.y >= (i32)m_dimensions.y)
 				continue;
 			
 			m_pixels[p.y * m_dimensions.x + p.x] = color;
@@ -160,9 +160,9 @@ void Pixel_Canvas::draw_text(char* text, v2i p, u32 color, const u8* font, u32 c
 		
 		character_idx *= char_height;
 		
-		for (i32 row = 0; row < char_height; ++row)
+		for (i32 row = 0; row < (i32)char_height; ++row)
 		{
-			for (i32 bit = 0; bit < char_width; ++bit)
+			for (i32 bit = 0; bit < (i32)char_width; ++bit)
 			{
 				if (font[character_idx + row] & (1 << bit))
 					set_pixel2({ x + bit, y + (i32)char_height - row}, color);
@@ -197,9 +197,9 @@ void Pixel_Canvas::draw_text(char* text, v2i p, u32 color, const u8* font, u32 c
 		
 		character_idx *= char_height;
 		
-		for (i32 row = 0; row < char_height; ++row)
+		for (i32 row = 0; row < (i32)char_height; ++row)
 		{
-			for (i32 bit = 0; bit < char_width; ++bit)
+			for (i32 bit = 0; bit < (i32)char_width; ++bit)
 			{
 				if (font[character_idx + row] & (1 << bit))
 				{
@@ -233,21 +233,21 @@ void Pixel_Canvas::draw_percentile_bar(
 {
 	v2i dim = end - start;
 	
-	i32 fill_width = dim.x * fill_amount + start.x;
+	i32 fill_width = (i32)(dim.x * fill_amount) + start.x;
 	Rect rect = {start.As<f32>(), end.As<f32>()};
 	
 	i32 height = i32(rect.max.y - rect.min.y);
 	i32 width = i32(rect.max.x - rect.min.x);
 	
-	for(i32 y = (i32)rect.min.y; y < (i32)rect.min.y + outline_thickness; ++y)
+	for(i32 y = (i32)rect.min.y; y < (i32)rect.min.y + (i32)outline_thickness; ++y)
 		for(i32 x = (i32)rect.min.x; x < (i32)rect.max.x; ++x)
 		{
 			set_pixel2(v2i{ x, y }, border_color);
 			set_pixel2(v2i{ x, y + height - (i32)outline_thickness }, border_color);
 		}
 	
-	for(i32 y = (i32)rect.min.y + outline_thickness; y < (i32)rect.max.y - outline_thickness; ++y)
-		for(i32 x = (i32)rect.min.x; x < (i32)rect.min.x + outline_thickness; ++x)
+	for(i32 y = (i32)rect.min.y + (i32)outline_thickness; y < (i32)rect.max.y - (i32)outline_thickness; ++y)
+		for(i32 x = (i32)rect.min.x; x < (i32)rect.min.x + (i32)outline_thickness; ++x)
 		{
 			set_pixel2(v2i{ x, y }, border_color);
 			set_pixel2(v2i{ x + width - (i32)outline_thickness, y }, border_color);
@@ -264,7 +264,7 @@ void Pixel_Canvas::draw_mesh(v2f position, Mesh mesh, u32 color)
 {
 	v2i p1 = (position + mesh.data[mesh.p_count - 1] + 0.5f).As<i32>();		
 	
-	for(i32 i = 0; i < mesh.p_count; ++i)
+	for(u32 i = 0; i < mesh.p_count; ++i)
 	{
 		v2i p2 = (position + mesh.data[i] + 0.5f).As<i32>();
 		draw_line(p1, p2, color);    
@@ -308,15 +308,15 @@ void Pixel_Canvas::draw_filled_rect_with_outline(
 	i32 height = i32(rect.max.y - rect.min.y);
 	i32 width = i32(rect.max.x - rect.min.x);
 	
-	for(i32 y = (i32)rect.min.y; y < (i32)rect.min.y + outline_thickness; ++y)
+	for(i32 y = (i32)rect.min.y; y < (i32)rect.min.y + (i32)outline_thickness; ++y)
 		for(i32 x = (i32)rect.min.x; x < (i32)rect.max.x; ++x)
 		{
 			set_pixel2(v2i{ x, y }, outline_color);
 			set_pixel2(v2i{ x, y + height - (i32)outline_thickness }, outline_color);
 		}
 	
-	for(i32 y = (i32)rect.min.y + outline_thickness; y < (i32)rect.max.y - outline_thickness; ++y)
-		for(i32 x = (i32)rect.min.x; x < (i32)rect.min.x + outline_thickness; ++x)
+	for(i32 y = (i32)rect.min.y + outline_thickness; y < (i32)rect.max.y - (i32)outline_thickness; ++y)
+		for(i32 x = (i32)rect.min.x; x < (i32)rect.min.x + (i32)outline_thickness; ++x)
 		{
 			set_pixel2(v2i{ x, y }, outline_color);
 			set_pixel2(v2i{ x + width - (i32)outline_thickness, y }, outline_color);

@@ -538,7 +538,7 @@ struct Linear_Allocator
 	
 	u32 inline get_free_capacity()
 	{
-		u32 result = capacity - (next_free - memory);
+		u32 result = u32(capacity - (next_free - memory));
 		return result;
 	}
 };
