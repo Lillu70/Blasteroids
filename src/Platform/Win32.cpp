@@ -496,8 +496,8 @@ static v2i win32_get_cursor_position()
 	y = (y - client_rect.bottom) * -1;
 	
 	// Next convert the screenspace coordinates into pixel space coordinates.
-	x = x * (i32)((f32)s_bitmap.width / (f32)client_rect.right);
-	y = y * (i32)((f32)s_bitmap.height / (f32)client_rect.bottom);
+	x = i32(x * ((f32)s_bitmap.width / (f32)client_rect.right));
+	y = i32(y * ((f32)s_bitmap.height / (f32)client_rect.bottom));
 	
 	return v2i{x, y};
 }
