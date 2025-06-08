@@ -1,5 +1,5 @@
 
-
+#pragma once
 
 static inline Entity* add_entity(Entity_Type type)
 {
@@ -73,7 +73,6 @@ static inline void add_timed_event(Timed_Event event)
 	game.timed_events[game.timed_event_count] = event;
 	game.timed_event_count += 1;
 }
-
 
 
 static Player* find_ship_owner(Ship* ship)

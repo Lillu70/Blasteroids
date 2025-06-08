@@ -4,14 +4,12 @@
 
 static void gui_push_frame(
 	GUI_Handler* handler, 
-	Platform_Call_Table* platform, 
 	General_Allocator* mem_arena,
 	u32 menu_memory_size,
 	void(*on_back_action)(),
 	void(*on_frame_close)())
 {
 	Assert(handler);
-	Assert(platform);
 	Assert(mem_arena);
 	
 	GUI_Frame* active_frame = &handler->active_frame;
@@ -25,11 +23,13 @@ static void gui_push_frame(
 		*prev_frame = *active_frame;
 	}
 	
+	#if 0
 	// there is no previous menu, show cursor.
 	else
 	{
 		platform->set_flag(App_Flags::cursor_is_visible, true);
 	}
+	#endif
 	
 	active_frame->widget_count = 0;
 	active_frame->selected_header = 0;
@@ -39,8 +39,8 @@ static void gui_push_frame(
 	active_frame->prev_frame = prev_frame;
 	
 	
-	handler->last_element_pos = 0;
-	handler->last_element_dim = 0;
+	handler->last_element_pos = {};
+	handler->last_element_dim = {};
 	handler->first_header = 0;
 	handler->last_header = 0;
 	
@@ -49,7 +49,7 @@ static void gui_push_frame(
 }
 
     
-static void gui_pop_frame(GUI_Handler* handler, Platform_Call_Table* platform, General_Allocator* mem_arena)
+static void gui_pop_frame(GUI_Handler* handler, General_Allocator* mem_arena)
 {
 	Assert(handler);
 	GUI_Frame* active_frame = &handler->active_frame;
@@ -72,7 +72,9 @@ static void gui_pop_frame(GUI_Handler* handler, Platform_Call_Table* platform, G
 	else
 	{
 		*active_frame = GUI_Frame();
+		#if 0
 		platform->set_flag(App_Flags::cursor_is_visible, false);
+		#endif
 	}
 }
 
@@ -136,7 +138,7 @@ static void gui_create_header(
 		if(ld != GUI_Link_Direction::down)
 			vertical_offset *= -1;
 		
-		target->position = handler->last_element_pos + v2f(0, vertical_offset);
+		target->position = handler->last_element_pos + v2f{0, vertical_offset};
 	}
 	else
 		target->position = *position;
@@ -222,7 +224,7 @@ static GUI_Widget_Header* gui_add_text(
 	
 	GUI_Font* font = &handler->active_theme->font;
 	
-	u32 text_lenght = null_terminated_buffer_lenght(spec->text);
+	u32 text_lenght = Null_Terminated_Buffer_Lenght(spec->text);
 	v2f dimensions = v2f{(f32)(text_lenght * spec->text_scale * font->char_width), 
 	(f32)(spec->text_scale * font->char_height)};
 	
@@ -335,9 +337,9 @@ static inline void gui_select_widget_with_mouse(GUI_Handler* handler, GUI_Widget
 }
 
 
-static void gui_handle_mouse_input(GUI_Handler* handler, Platform_Call_Table* platform, Action* actions)
+static void gui_handle_mouse_input(GUI_Handler* handler, Action* actions)
 {
-	v2i cursor_position = platform->get_cursor_position();
+	v2s cursor_position = Platform_Get_Cursor_Position();
 	
 	GUI_Frame* active_frame = &handler->active_frame;
 	
@@ -354,8 +356,8 @@ static void gui_handle_mouse_input(GUI_Handler* handler, Platform_Call_Table* pl
 		{
 			u32 widget_size = gui_get_widget_size(header);
 			
-			Rect element_rect = create_rect_center(header->position, header->dimensions);
-			if(point_inside_rect(cursor_position.As<f32>(), element_rect))
+			Rect element_rect = Create_Rect_Center(header->position, header->dimensions);
+			if(Is_Point_Inside_Rect(cursor_position.As<f32>(), element_rect))
 			{
 				// Select element with the cursor.
 				
@@ -385,7 +387,7 @@ static void gui_handle_mouse_input(GUI_Handler* handler, Platform_Call_Table* pl
 							f32 rel_cursor_x = (cursor_position.As<f32>() - (header->position - half_dim)).x;
 							f32 fill_percent = rel_cursor_x / header->dimensions.x;
 							f32 fill = (spec->max - spec->min) * fill_percent + spec->min;
-							i32 steps = (i32)round(fill / spec->step);
+							s32 steps = (s32)round(fill / spec->step);
 							
 							spec->value = steps * spec->step;
 							
@@ -426,7 +428,7 @@ static void gui_handle_mouse_input(GUI_Handler* handler, Platform_Call_Table* pl
 }
 
 
-static bool gui_handle_input(GUI_Handler* handler, Platform_Call_Table* platform, Action* actions)
+static bool gui_handle_input(GUI_Handler* handler, Action* actions)
 {
 	Assert(handler);
 	Assert(actions);
@@ -435,20 +437,22 @@ static bool gui_handle_input(GUI_Handler* handler, Platform_Call_Table* platform
 	
 	// Note: This is here to fix starting the application by pressing enter.
 	// Todo: Fix this in the platform layer instead of here.
-	if(!platform->get_keyboard_key_down(Key_Code::ENTER))
+	if(!Platform_Get_Keyboard_Key_Down(Key_Code::ENTER))
 		handler->select_has_been_in_up_state = true;
 	
 	if(!handler->select_has_been_in_up_state)
 		return true;
 	
-	if(!(platform->get_flags() & (1 << (u32)App_Flags::is_focused)))
+	u64 flags = Platform_Get_Flags();
+	
+	if(!(flags & Platform_Flags::focused))
 		return false;
 	
 	// Exit if no menu is up.
 	if(active_frame->widget_allocator.memory == 0)
 		return true;
 	
-	update_actions(platform, actions, (u32)GUI_Menu_Actions::COUNT);
+	update_actions(actions, (u32)GUI_Menu_Actions::COUNT);
 	
 	
 	if(active_frame->on_back_action)
@@ -460,7 +464,7 @@ static bool gui_handle_input(GUI_Handler* handler, Platform_Call_Table* platform
 		}
 	}
 	
-	gui_handle_mouse_input(handler, platform, actions);
+	gui_handle_mouse_input(handler, actions);
 	
 	GUI_Widget_Header* header = active_frame->selected_header;
 	
@@ -531,10 +535,10 @@ static bool gui_handle_input(GUI_Handler* handler, Platform_Call_Table* platform
 			bool right_press = gui_get_action(actions, GUI_Menu_Actions::right)->is_pressed();
 			if(left_press || right_press)
 			{
-				handler->action_start_time = (f32)platform->get_time_stamp();
+				handler->action_start_time = (f32)Platform_Get_Time_Stamp();
 			}
 			
-			f32 time = (f32)platform->get_time_stamp();
+			f32 time = (f32)Platform_Get_Time_Stamp();
 			if(time < handler->action_cd_time)
 				break;
 			
@@ -609,20 +613,20 @@ static bool gui_handle_input(GUI_Handler* handler, Platform_Call_Table* platform
 				{
 					Key_Code k = (Key_Code)i;
 					
-					if(platform->get_keyboard_key_down(k))
+					if(Platform_Get_Keyboard_Key_Down(k))
 					{
 						key = k;
 						break;
 					}
 				}
 				
-				Controller_State controller = platform->get_controller_state(0);
+				Controller_State controller = Platform_Get_Controller_State(0);
 				
 				for(u32 i = 0; i < (u32)Button::BUTTON_COUNT; ++i)
 				{
 					Button b = (Button)i;
 					
-					if(controller.get_button_down(b))
+					if(controller.Get_Button_Down(b))
 					{
 						button = b;
 						break;
@@ -681,7 +685,7 @@ static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas)
 				if(widget->is_pressed) 
 					outline_color = theme->down_color;
 				
-				Rect button_rect = create_rect_center(header->position, header->dimensions);
+				Rect button_rect = Create_Rect_Center(header->position, header->dimensions);
 				
 				canvas->draw_filled_rect_with_outline(button_rect, 
 				theme->outline_thickness,
@@ -690,10 +694,10 @@ static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas)
 				
 				if(spec->text)
 				{
-					u32 text_lenght = null_terminated_buffer_lenght(spec->text);
-					v2i scale = { spec->text_scale, spec->text_scale };
+					u32 text_lenght = Null_Terminated_Buffer_Lenght(spec->text);
+					v2s scale = { spec->text_scale, spec->text_scale };
 					
-					v2i text_p = header->position.As<i32>();
+					v2s text_p = header->position.As<s32>();
 					text_p.x -= text_lenght * scale.x * font->char_width / 2;
 					text_p.y -= scale.y * font->char_height / 2;
 					
@@ -713,10 +717,10 @@ static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas)
 				GUI_Text* widget = (GUI_Text*)header;
 				GUI_Text_Spec* spec = &widget->spec;
 				
-				u32 text_lenght = null_terminated_buffer_lenght(spec->text);
-				v2i scale = { spec->text_scale, spec->text_scale };
+				u32 text_lenght = Null_Terminated_Buffer_Lenght(spec->text);
+				v2s scale = { spec->text_scale, spec->text_scale };
 				
-				v2i text_p = header->position.As<i32>();
+				v2s text_p = header->position.As<s32>();
 				text_p.x -= text_lenght * scale.x * font->char_width / 2;
 				text_p.y -= scale.y * font->char_height / 2;
 				
@@ -743,8 +747,8 @@ static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas)
 				GUI_Slider_Spec* spec = &widget->spec;
 				v2f half_dim = header->dimensions * 0.5f;
 				
-				v2i bar_start = (header->position - half_dim).As<i32>();
-				v2i bar_end = (header->position + half_dim).As<i32>();
+				v2s bar_start = (header->position - half_dim).As<s32>();
+				v2s bar_end = (header->position + half_dim).As<s32>();
 				
 				f32 fill = (spec->value - spec->min) / (spec->max - spec->min);
 				
@@ -770,7 +774,7 @@ static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas)
 				if(widget->is_pressed) 
 					outline_color = theme->down_color;
 				
-				Rect rect = create_rect_center(header->position, header->dimensions);
+				Rect rect = Create_Rect_Center(header->position, header->dimensions);
 				
 				canvas->draw_filled_rect_with_outline(
 					rect, 
@@ -780,8 +784,8 @@ static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas)
 				
 				if(spec->is_checked)
 				{
-					rect = create_rect_center(header->position, header->dimensions * 0.5f);
-					canvas->draw_filled_rect(0, rect, outline_color);
+					rect = Create_Rect_Center(header->position, header->dimensions * 0.5f);
+					canvas->draw_filled_rect({}, rect, outline_color);
 				}
 			
 			}break;

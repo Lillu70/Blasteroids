@@ -11,7 +11,7 @@ struct Default_Weapon_Data
 	}
 	
 	f32 bullet_speed = 0;
-	i32 bullet_damage = 0;
+	s32 bullet_damage = 0;
 	f32 color_effect = 0;
 };
 
@@ -24,7 +24,7 @@ struct Scatter_Weapon_Data
 	}  
 	
 	f32 pellet_speed = 0;
-	i32 pellet_damage = 0;
+	s32 pellet_damage = 0;
 	u32 per_shot_pellet_count = 0;
 	f32 shot_arc = 0;
 	f32 color_effect = 0;
@@ -39,7 +39,7 @@ struct Laser_Weapon_Data
 	}
 	
 	f32 damage_freq = 0;
-	i32 laser_damage = 0;
+	s32 laser_damage = 0;
 };
 
 

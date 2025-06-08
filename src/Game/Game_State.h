@@ -1,10 +1,6 @@
 
 #pragma once
 
-#include "Action_Definations.h"
-#include "Score.cpp"
-
-
 struct Timed_Event;
 struct Player;
 struct Laser;
@@ -28,8 +24,8 @@ struct Game
 	static inline Laser* laser_table = 0;
 	u32 active_laser_count = 0;
 	
-	static inline v2i asteroid_area_start = 0;
-	static inline v2i asteroid_area_end = 0;
+	static inline v2s asteroid_area_start = {};
+	static inline v2s asteroid_area_end = {};
 	
 	static inline Timed_Event* timed_events = 0;
 	u32 timed_event_count = 0;
@@ -58,6 +54,8 @@ struct Game
 	// TODO: Make these flags.
 	bool draw_ui = true;
 	bool is_paused = false;
+	bool running = true;
+	
 	
 	u32 get_active_hostile_count()
 	{
@@ -67,6 +65,7 @@ struct Game
 	
 	u32 get_next_entity_id() { return next_entity_id++; }
 	u32 get_next_player_id() { return next_player_id++; }
+	
 	
 private:
 	u32 next_entity_id = 1;
@@ -107,6 +106,39 @@ struct Timed_Event
 };
 
 
+#define WAVE_SUFFIXED_STRING(X) STRINGYFY(sounds\\##X##.WAV)##,
+#define SOUNDS(X) 			\
+	X(music) 				\
+	X(thruster) 			\
+	X(asteroid_explosion) 	\
+	X(asteroid_damage) 		\
+	X(default_weapon_shoot) \
+	X(scatter_gun_shoot) 	\
+	X(laser_shoot) 			\
+	X(ship_explosion) 		\
+	X(gain_pickup) 			\
+	X(defeat) 				\
+	X(button_click) 		\
+	X(COUNT) 				\
+
+
+char* s_sound_names[] = 
+{
+	SOUNDS(WAVE_SUFFIXED_STRING)
+};
+#undef WAVE_SUFFIXED_STRING
+
+
+namespace Sounds
+{
+	enum T : u32
+	{
+		SOUNDS(ENUMYFFY)
+	};
+};
+#undef SOUNDS
+
+
 struct Transient_Data
 {
 	static constexpr u32 enemy_mesh_count = 3;
@@ -120,6 +152,8 @@ struct Transient_Data
 	
 	v2u pixel_buffer_dimensions = {0, 0};
 	u32* pixel_buffer = 0;
+	
+	Sound sounds[Sounds::COUNT] = {};
 };
 
 
@@ -138,8 +172,6 @@ static Pixel_Canvas canvas;
 static Pixel_Canvas ui_canvas;
 
 static Pixel_Canvas screen_canvas;
-
-static Platform_Call_Table platform;
 
 static Transient_Data transient;
 

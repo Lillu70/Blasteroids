@@ -32,7 +32,7 @@ struct Entity
 	Entity_Type type = Entity_Type::none;
 	u32 id = 0;
 	u32 flags = 0;
-	u32 color = WHITE;
+	u32 color = color_to_u32(WHITE);
 	
 	v2f position = { 0, 0 };
 	v2f velocity = { 0, 0 };

@@ -1,6 +1,36 @@
 
 #pragma once
 
+
+inline u32 multiply_accross_color_channels(u32 color, f32 mult)
+{
+	u8* p = (u8*)&color;
+	for (u32 i = 0; i < 3; i++)
+	{
+		s32 mult_val = (s32)((*(p + i)) * mult);
+		s32 val = Min(s32(255), Max(s32(0), mult_val));
+		*(p + i) = (u8)val;
+	}
+	
+	return color;
+}
+
+
+inline u32 multiply_accross_color_channels(u32 color, u32 min_values, f32 mult)
+{
+	u8* p = (u8*)&color;
+	u8* m = (u8*)&min_values;
+	for (u32 i = 0; i < 3; i++)
+	{
+		s32 mult_val = (s32)((*(p + i)) * mult);
+		s32 val = Min(s32(255), Max((s32)(*(m+i)), mult_val));
+		*(p + i) = (u8)val;
+	}
+	
+	return color;
+}
+
+
 static inline void particle_system_clear()
 {
 	particle_system = Particle_System();
@@ -79,7 +109,7 @@ static void particle_system_update_and_draw(
 				color = multiply_accross_color_channels(particle->full_color, background_color, f3);
 			}
 			
-			canvas->set_pixel2(particle->position.As<i32>(), color);
+			canvas->set_pixel2(particle->position.As<s32>(), color);
 		}	
 	}
 }

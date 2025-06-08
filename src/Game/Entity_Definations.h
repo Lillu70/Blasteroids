@@ -52,6 +52,8 @@ struct Ship
 	f32 orientation = 0;
 	f32 width = 0;
 	
+	Sound_ID thrust_sound = {};
+	
 	Weapon weapon;
 	Weapon::type default_weapon_type;
 	
@@ -92,7 +94,7 @@ struct Asteroid
 {
 	Rect bounding_box;
 	v2f* _mesh;
-	i32 hp;
+	s32 hp;
 	u8 mesh_p_count;
 	Size size;
 	
@@ -109,13 +111,13 @@ struct Player
 	Ship* ship  = 0;
 	Weapon::type spawn_weapon;
 	u32 score = 0;
-	i32 lives = 0;
-	u32 color = WHITE;
+	s32 lives = 0;
+	u32 color = color_to_u32(WHITE);
 	u32 player_id = 0;
 	u32 ship_id = 0;
 	
 	static constexpr u32 max_score = 999999;
-	void give_score(i32 _score)
+	void give_score(s32 _score)
 	{
 		if(_score < 0 && score + _score > score)
 			score = 0;
@@ -132,7 +134,7 @@ struct Bullet
 	static inline f32 trace_lenght = 10;
 	u32 source_id = 0;
 	Entity_Type source_type = Entity_Type::none;
-	i32 damage = 0;
+	s32 damage = 0;
 };
 
 
@@ -172,7 +174,7 @@ struct AI
 	f32 threat_towards_velocity;
 	f32 spook_range = 0;
 	f32 thread_range = 0;
-	v2f target_position = 0;
+	v2f target_position = {};
 	f32 desired_velocity_magnitude = 0;
 	f64 state_start_time = 0;
 	u32 state_tick_count = 0;
@@ -190,7 +192,7 @@ struct Enemy_Ship
 	};
 	
 	Ship ship;
-	i32 hp;
+	s32 hp;
 	AI ai;
 	Type type;
 };

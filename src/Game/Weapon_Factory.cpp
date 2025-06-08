@@ -111,6 +111,8 @@ static void fire_default_weapon(Entity* source, v2f weapon_mount_p, f32 weapon_d
 	entity->color = multiply_accross_color_channels(source->color, weapon->color_effect); 
 	
 	*entity->alloc_internal<Bullet>() = { source->id, source->type, weapon->bullet_damage };
+	
+	Play_Sound(transient.sounds + Sounds::default_weapon_shoot, Play_Mode::ones);
 }
 
 

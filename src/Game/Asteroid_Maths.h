@@ -1,10 +1,44 @@
 
 #pragma once
 
-#include "..\Utility\Maths.h"
-#include "..\Utility\Utility.h"
-#include "..\Utility\Assert.h"
-#include "Random_Machine.h"
+template<typename T>
+inline v2<T> rotate_point(v2<T> p, f32 a)
+{
+	f32 c = cosf(a);
+	f32 s = sinf(a);
+	return v2<T>{p.x * c - p.y * s, p.x * s + p.y * c};
+}
+
+template<typename T>
+inline v2<T> rotate_point(v2<T> p, f32 cos_a, f32 sin_a)
+{
+	return v2<T>{p.x * cos_a - p.y * sin_a, p.x * sin_a + p.y * cos_a};
+}
+
+
+inline bool line_intersection(v2f l0p0, v2f l0p1, v2f l1p0, v2f l1p1, v2f& hit_location)
+{
+	v2f s1;
+	s1.x = l0p1.x - l0p0.x;
+	s1.y = l0p1.y - l0p0.y;
+	
+	v2f s2;
+	s2.x = l1p1.x - l1p0.x;
+	s2.y = l1p1.y - l1p0.y;
+	
+	f32 x = -s2.x * s1.y + s1.x * s2.y;
+	f32 s = (-s1.y * (l0p0.x - l1p0.x) + s1.x * (l0p0.y - l1p0.y)) / x;
+	f32 t = (s2.x * (l0p0.y - l1p0.y) - s2.y * (l0p0.x - l1p0.x)) / x;
+	
+	if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+	{
+		hit_location.x = l0p0.x + (t * s1.x);
+		hit_location.y = l0p0.y + (t * s1.y);
+		return true;
+	}
+	
+	return false;
+}
 
 
 static void rotate_mesh(v2f* ref, v2f* mesh, u32 p_count, f32 cos, f32 sin)
@@ -71,7 +105,7 @@ static inline void update_position(v2f* position, v2f* velocity, v2f acceleratio
 	v2f a = acceleration;
 	v2f v = a * t + *velocity;
 	*velocity = v;
-	*position = a * 0.5f * square(t) + v * t + p;
+	*position = a * 0.5f * Square(t) + v * t + p;
 }
 
 
@@ -81,7 +115,7 @@ static inline void update_position(v2f* position, v2f* velocity, f32 t)
 }
 
 
-static inline void clamp_position_to_rect(v2f* position, v2i end)
+static inline void clamp_position_to_rect(v2f* position, v2s end)
 {
 	while(position->x < 0)
 		position->x += end.x;
@@ -97,10 +131,10 @@ static inline void clamp_position_to_rect(v2f* position, v2i end)
 }
 
 
-static inline void clamp_position_to_rect(v2f* position, v2i start, v2i end)
+static inline void clamp_position_to_rect(v2f* position, v2s start, v2s end)
 {
-	i32 width = end.x - start.x;
-	i32 height = end.y - start.y;
+	s32 width = end.x - start.x;
+	s32 height = end.y - start.y;
 	
 	while(position->x < start.x)
 		position->x += width;
@@ -180,9 +214,9 @@ static inline f32 radian_wrap2(f32 input)
 
 static bool point_inside_mesh(v2f point, Mesh mesh)
 {
-	i32 i, j;
+	s32 i, j;
 	bool c = false;
-	for (i = 0, j = (i32)mesh.p_count - 1; i < (i32)mesh.p_count; j = i++)
+	for (i = 0, j = (s32)mesh.p_count - 1; i < (s32)mesh.p_count; j = i++)
 	{
 		if 
 		(
@@ -275,15 +309,15 @@ static inline bool point_inside_rect(v2f p, v2u rect)
 }
 
 
-static inline v2f random_point_on_rim(Random_Machine* rm, v2i start, v2i end)
+static inline v2f random_point_on_rim(Random_Machine* rm, v2s start, v2s end)
 {    
 	Assert(rm);
 	
-	v2i area_dim = end - start;
+	v2s area_dim = end - start;
 	u32 spawn_pixel_count = (area_dim.x + area_dim.y) * 2;
 	
-	i32 random_pixel = (i32)rm->random_u32(spawn_pixel_count);
-	v2i p;
+	s32 random_pixel = (s32)rm->random_u32(spawn_pixel_count);
+	v2s p;
 	if(random_pixel < area_dim.x)
 		p = { start.x + random_pixel, start.y};
 	
@@ -339,7 +373,7 @@ static f32 find_mesh_p_furthest_distance_from_origin(Mesh mesh)
 	f32 result = 0;
 	
 	for(u32 p = 0; p < mesh.p_count; ++p)
-		result = max(distance({0,0}, mesh.data[p]), result);
+		result = Max(Distance({0,0}, mesh.data[p]), result);
 	
 	return result;
 }
@@ -367,7 +401,7 @@ static Rect create_bounding_box_from_mesh(Mesh mesh)
 			max_y = p.y;
 	}
 	
-	return create_rect_min_max({ min_x, min_y }, { max_x, max_y });
+	return Create_Rect_Min_Max({ min_x, min_y }, { max_x, max_y });
 }
 
 
@@ -375,7 +409,7 @@ static Rect create_bounding_box_from_mesh(Mesh mesh, v2f offset)
 {
 	Rect result = create_bounding_box_from_mesh(mesh);
 	
-	add_offset_to_rect(offset, &result);
+	Add_Offset_To_Rect(offset, &result);
 	
 	return result;
 }

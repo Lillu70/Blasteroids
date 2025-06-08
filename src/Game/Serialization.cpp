@@ -12,7 +12,7 @@
 	
 	struct File_Data
 	{
-		static inline const char* file_name = "Blasteroids.data";
+		static inline char* file_name = "Blasteroids.data";
 		static inline constexpr u32 file_format_version = 1;
 		
 		u32 version;
@@ -75,11 +75,11 @@ static void save_settings_and_score(bool force_save = false)
 	file_data.sfx_volume = s_settings.sfx_volume;
 	file_data.music_volume = s_settings.music_volume;
 	file_data.is_muted = s_settings.is_muted;
-	file_data.is_fullscreen = (platform.get_flags() & 1 << (u32)App_Flags::is_fullscreen) > 0;
+	file_data.is_fullscreen = (Platform_Get_Flags() & Platform_Flags::fullscreen);
 	
 	// NOTE: Likely not a sensible way of handling errors.
 	u32 attemps = 3;
-	while(!platform.write_file(File_Data::file_name, (u8*)&file_data, sizeof(file_data)) && attemps-- > 0);
+	while(!Platform_Write_File(File_Data::file_name, (char*)&file_data, sizeof(file_data)) && attemps-- > 0);
 	
 	s_settings.dirty = false;
 }
@@ -89,13 +89,13 @@ static bool load_settings_and_score()
 {
 	File_Data file_data = {0};
 	u32 file_size;
-	if(!platform.get_file_size(File_Data::file_name, &file_size))
+	if(!Platform_Get_File_Size(File_Data::file_name, &file_size))
 		return false;
 	
 	if(file_size != sizeof(file_data))
 		return false;
 	
-	if(!platform.read_file(File_Data::file_name, (u8*)&file_data, file_size))
+	if(!Platform_Read_File(File_Data::file_name, (u8*)&file_data, file_size))
 		return false;
 	
 	if(file_data.version != File_Data::file_format_version)
@@ -127,7 +127,7 @@ static bool load_settings_and_score()
 	s_settings.sfx_volume = file_data.sfx_volume;
 	s_settings.music_volume = file_data.music_volume;
 	s_settings.is_muted = file_data.is_muted;
-	platform.set_flag(App_Flags::is_fullscreen, file_data.is_fullscreen);
+	Platform_Set_Fullscreen(file_data.is_fullscreen);
 	
 	return true;
 }

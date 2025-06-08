@@ -75,15 +75,21 @@ struct GUI_Font
 };
 
 
+u32 color_to_u32(Color c)
+{
+	u32 result = *(u32*)&c;
+	return result;
+}
+
 struct GUI_Theme
 {
-	u32 selected_color = put_color(250, 220, 115);
-	u32 background_color = put_color(20, 20, 20);
-	u32 down_color = put_color(50, 50, 50);
+	u32 selected_color = color_to_u32(Make_Color(250, 220, 115));
+	u32 background_color = color_to_u32(Make_Color(20, 20, 20));
+	u32 down_color = color_to_u32(Make_Color(50, 50, 50));
 	u32 outline_thickness = 3;
-	u32 outline_color = put_color(110, 110, 130);
-	u32 text_color = WHITE;
-	u32 title_color = put_color(210, 210, 230);
+	u32 outline_color = color_to_u32(Make_Color(110, 110, 130));
+	u32 text_color = color_to_u32(WHITE);
+	u32 title_color = color_to_u32(Make_Color(210, 210, 230));
 	
 	GUI_Font font;
 };
@@ -102,8 +108,8 @@ struct GUI_Widget_Header
 {
 	GUI_Widget_Type type = GUI_Widget_Type::none;
 	
-	v2f position = 0;
-	v2f dimensions = 0;
+	v2f position = {};
+	v2f dimensions = {};
 	
 	GUI_Widget_Header* up_widget = 0;
 	GUI_Widget_Header* down_widget = 0;
@@ -115,7 +121,7 @@ struct GUI_Widget_Header
 struct GUI_Button_Spec
 {
 	u8* text = 0;
-	i32 text_scale = 1;
+	s32 text_scale = 1;
 	
 	void(*on_click)() = 0;
 };
@@ -135,7 +141,7 @@ struct GUI_Button
 struct GUI_Text_Spec
 {
 	u8* text = 0;
-	i32 text_scale = 1;
+	s32 text_scale = 1;
 	bool is_selectable = 0;
 	bool is_title = 0;
 };
@@ -232,9 +238,9 @@ struct GUI_Handler
 	f32 action_start_time = 0;
 	
 	f32 default_padding = 10;
-	v2i last_cursor_position = v2i(0,0);
-	v2f last_element_pos = 0;
-	v2f last_element_dim = 0;
+	v2s last_cursor_position = {};
+	v2f last_element_pos = {};
+	v2f last_element_dim = {};
 	u32 addhighlight_mem_offset = 0;
 	
 	GUI_Theme* active_theme = 0;
@@ -253,13 +259,12 @@ static bool gui_menu_is_up(GUI_Handler* handler);
 
 static void gui_push_frame(
 	GUI_Handler* handler, 
-	Platform_Call_Table* platform, 
 	General_Allocator* mem_arena,
 	u32 menu_memory_size,
 	void(*on_back_action)(),
 	void(*on_frame_close)() = 0);
 
-static void gui_pop_frame(GUI_Handler* handler, Platform_Call_Table* platform, General_Allocator* mem_arena);
+static void gui_pop_frame(GUI_Handler* handler, General_Allocator* mem_arena);
 
 
 static inline Action* gui_get_action(Action* actions, GUI_Menu_Actions action);
@@ -268,7 +273,7 @@ static inline Action* gui_get_action(Action* actions, GUI_Menu_Actions action);
 static void gui_draw_widgets(GUI_Handler* handler, Pixel_Canvas* canvas);
 
 
-static bool gui_handle_input(GUI_Handler* handler, Platform_Call_Table* platform, Action* actions);
+static bool gui_handle_input(GUI_Handler* handler, Action* actions);
 
 
 static inline void gui_link_up_down(GUI_Widget_Header* up, GUI_Widget_Header* down);

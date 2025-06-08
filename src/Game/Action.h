@@ -15,35 +15,34 @@ struct Action
 	
 	inline bool is_pressed()
 	{
-		return state.is_pressed();
+		return state.Is_Pressed();
 	}
 	
 	inline bool is_released()
 	{
-		return state.is_released();
+		return state.Is_Released();
 	}
 	
 	inline bool is_down()
 	{
-		return state.is_down();
+		return state.Is_Down();
 	}
 	
 	inline bool is_up()
 	{
-		return state.is_up();
+		return state.Is_Up();
 	}
 };
 
 
-static void update_actions(Platform_Call_Table* platform, Action* actions, u32 count)
+static void update_actions(Action* actions, u32 count)
 {
-	Assert(platform);
 	Assert(actions);
-	Assert(count);
+	Assert(count);	
 	
-	Controller_State controller = platform->get_controller_state(0);
+	Controller_State controller = Platform_Get_Controller_State(0);
 	
-	u64 frame = platform->get_frame_count();
+	u64 frame = Platform_Get_Frame_Count();
 	
 	for(u32 i = 0; i < count; ++i)
 	{
@@ -52,15 +51,15 @@ static void update_actions(Platform_Call_Table* platform, Action* actions, u32 c
 		if(action->last_poll_frame != frame - 1 || action->disabled)
 		{
 			action->invalid = true;
-			action->state = Button_State(false, false);
+			action->state = Button_State{false, false};
 		}
 		else
 		{
 			bool s1 = (action->keyboard_mapping == Key_Code::NONE)? false : 
-			platform->get_keyboard_key_down(action->keyboard_mapping);
+			Platform_Get_Keyboard_Key_Down(action->keyboard_mapping);
 			
 			bool s2 = actions->controller_mapping == Button::NONE? false : 
-			controller.get_button_state(action->controller_mapping).m_curr;
+			controller.Get_Button_State(action->controller_mapping).current;
 			
 			if(action->invalid)
 			{
@@ -71,7 +70,7 @@ static void update_actions(Platform_Call_Table* platform, Action* actions, u32 c
 			}
 			else
 			{
-				action->state = Button_State(s1 || s2, action->state.m_curr); 
+				action->state = Button_State{s1 || s2, action->state.current};
 			}
 		}
 		
