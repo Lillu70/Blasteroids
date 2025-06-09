@@ -804,9 +804,9 @@ struct Linear_Allocator
     {
         return (T*)push(sizeof(T));
     }
-	
-	
-	static void* _Static_Push(void* allocator, u32 size)
+    
+    
+    static void* _Static_Push(void* allocator, u32 size)
     {
         void* result = ((Linear_Allocator*)allocator)->push(size);
         return result;

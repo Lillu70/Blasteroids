@@ -67,4 +67,3 @@ constexpr s32 S32_MAX = 2147483647;
 constexpr u16 U16_MAX = 0xFFFF;
 constexpr u8  U8_MAX  = 0xFF;
 constexpr s8  S8_MAX  = 127;
-

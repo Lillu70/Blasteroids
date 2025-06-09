@@ -638,14 +638,14 @@ static void Platform_Init(char* window_title, v2s window_position, v2s window_di
     
     Init_Sound();
     
-	#if COMPILE_OPENGL
-	Init_OpenGL();
-	#endif
-	
-	if(create_thread_pool)
-	{
-		Init_Thread_Pool();
-	}
+    #if COMPILE_OPENGL
+    Init_OpenGL();
+    #endif
+    
+    if(create_thread_pool)
+    {
+        Init_Thread_Pool();
+    }
     
     Set_VSync(vsync);
     

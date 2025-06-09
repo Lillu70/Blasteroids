@@ -7,6 +7,8 @@
 #include "Utility/Vector.h"
 #include "Utility/Vector_Ex.h"
 #include "Utility/Rect.h"
+#include "Game/Random_Machine.h"
+#include "Utility/Range.h"
 
 #include "Platform/Input.h"
 #include "Platform/OS.h"
@@ -22,7 +24,6 @@
 #include "Game/Mesh.h"
 #include "Game/Terminus_Font.h"
 #include "Game/Action.h"
-#include "Game/Random_Machine.h"
 #include "Game/Pixel_Canvas.h"
 #include "Game/Pixel_Canvas.cpp"
 #include "Game/GUI.h"
@@ -49,19 +50,19 @@
 
 static inline void Asteroids()
 {
-	init_asteroids_game();
-	
-	bool update_surface = false;
-	
-	while(update_asteroids_game(Platform_Get_Frame_Time(), update_surface))
-	{
-		Platform_Swap_Buffer_Type swap_buffer = Platform_Swap_Buffer_Type::none;
-		if(update_surface)
-		{
-			swap_buffer = Platform_Swap_Buffer_Type::software;
-			update_surface = false;
-		}
-		
-		Platform_Update(swap_buffer);
-	}
+    init_asteroids_game();
+
+    bool update_surface = false;
+
+    while(update_asteroids_game(Platform_Get_Frame_Time(), update_surface))
+    {
+        Platform_Swap_Buffer_Type swap_buffer = Platform_Swap_Buffer_Type::none;
+        if(update_surface)
+        {
+            swap_buffer = Platform_Swap_Buffer_Type::software;
+            update_surface = false;
+        }
+
+        Platform_Update(swap_buffer);
+    }
 }

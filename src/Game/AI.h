@@ -18,27 +18,27 @@
 
 struct Threat_Map_Element
 {
-	v2f position = { 0, 0 };
-	v2f velocity = { 0, 0 };
-	v2f nv = { 0, 0 };
-	v2f ro = { 0, 0 };
-	v2f lo = { 0, 0 };
-	
-	f32 mv = 0;
-	f32 size = 0;
+    v2f position = { 0, 0 };
+    v2f velocity = { 0, 0 };
+    v2f nv = { 0, 0 };
+    v2f ro = { 0, 0 };
+    v2f lo = { 0, 0 };
+    
+    f32 mv = 0;
+    f32 size = 0;
 };
 
 
 struct Threat_Pizza
 {
-	static constexpr u32 slice_count = 64;
-	f32 threat_pizza[slice_count];
-	
-	inline void clear_threat_pizza();
-	inline u32 get_threat_pizza_idx_from_angle(f32 angle);
-	f32 get_safest_direction(f32 start_angle);
-	
-	void set_threat_level(f32 level, f32 start_angle, f32 end_angle, f32 middle_angle);
+    static constexpr u32 slice_count = 64;
+    f32 threat_pizza[slice_count];
+    
+    inline void clear_threat_pizza();
+    inline u32 get_threat_pizza_idx_from_angle(f32 angle);
+    f32 get_safest_direction(f32 start_angle);
+    
+    void set_threat_level(f32 level, f32 start_angle, f32 end_angle, f32 middle_angle);
 };
 
 
@@ -50,12 +50,12 @@ static void threat_map_add_asteroid(Entity* entity, Threat_Map_Element* map, u32
 
 
 static f32 add_threat_element_to_pizza(
-	Threat_Pizza* pizza, 
-	Threat_Map_Element* threat, 
-	f32 ship_size, 
-	v2f threat_mesh_origin,
-	v2f* threat_mesh,
-	v2f ship_position);
+    Threat_Pizza* pizza, 
+    Threat_Map_Element* threat, 
+    f32 ship_size, 
+    v2f threat_mesh_origin,
+    v2f* threat_mesh,
+    v2f ship_position);
 
 
 static void check_for_enemy_AI_Interupt(Entity* enemy_ship, Threat_Map_Element* map, u32 map_element_count);

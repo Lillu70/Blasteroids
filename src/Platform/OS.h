@@ -11,7 +11,7 @@ enum class Platform_Swap_Buffer_Type
 {
     software,
     device,
-	none
+    none
 };
 
 
@@ -20,7 +20,7 @@ struct Work_Data
     union
     {
         void* user_ptr;
-        u8 buffer[64];        
+        u8 buffer[64];
     };
 };
 

@@ -18,11 +18,26 @@ struct Sound_Container
 
 struct Sound_Player
 {
-    Sound_Container mixer_slots[16];
-    u64 next_play_id = 1;
-    f32 master_volume = 0.2f;
+    Sound_Container mixer_slots[32];
+    u64 next_play_id;
+    f32 master_volume;
+    Range volume_range;
+    Range speed_range;
 };
-static Sound_Player s_sound_player = {};
+
+
+static inline Sound_Player Create_Default_Sound_Player()
+{
+    Sound_Player sp = {};
+    sp.next_play_id = 1;
+    sp.master_volume = 1.f;
+    sp.volume_range = {0.5f, 1.5f};
+    sp.speed_range = {0.9f, 1.1f};
+    
+    return sp;
+}
+
+static Sound_Player s_sound_player = Create_Default_Sound_Player();
 
 
 void Set_Volume(f32 volume)
@@ -36,30 +51,41 @@ Sound_ID Play_Sound(Sound* sound, Play_Mode play_mode, f32 volume, f32 speed)
     Sound_ID id = {};
     
     if(sound->memory)
-	{
-		Assert(sound->samples_per_channel);
-		
-		for(s32 i= 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
-		{
-			Sound_Container* slot = s_sound_player.mixer_slots + i;
-			
-			if(slot->id.v == 0)
-			{
-				*slot = {};
-				id.v = ++s_sound_player.next_play_id;
-				
-				slot->id = id;
-				slot->sound = sound;
-				slot->play_mode = play_mode;
-				slot->volume = volume;
-				slot->speed = speed;
-				
-				break;
-			}
-		}		
-	}
+    {
+        Assert(sound->samples_per_channel);
+        
+        for(s32 i= 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
+        {
+            Sound_Container* slot = s_sound_player.mixer_slots + i;
+            
+            if(slot->id.v == 0)
+            {
+                *slot = {};
+                id.v = ++s_sound_player.next_play_id;
+                
+                slot->id = id;
+                slot->sound = sound;
+                slot->play_mode = play_mode;
+                slot->volume = volume;
+                slot->speed = speed;
+                
+                break;
+            }
+        }       
+    }
     
     return id;
+}
+
+
+Sound_ID Play_Sound(Sound* sound, Play_Mode play_mode, Range volume_range, Range speed_range)
+{
+    f32 volume = Random_From_Range(volume_range);
+    f32 speed  = Random_From_Range(speed_range);
+    
+    Sound_ID result = Play_Sound(sound, play_mode, volume, speed);
+    
+    return result;
 }
 
 
@@ -83,55 +109,55 @@ bool Stop_Sound(Sound_ID id)
 
 void Stop_All_Sounds()
 {
-	for(s32 i = 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
-	{
-		Stop_Sound(s_sound_player.mixer_slots[i].id);
-	}
+    for(s32 i = 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
+    {
+        Stop_Sound(s_sound_player.mixer_slots[i].id);
+    }
 }
 
 
 void Output_Sound(Target_Buffer_Sound_Sample* buffer, u64 sample_count, u32 samples_per_second)
-{	
-	f32 sample_time = 1.0f / f32(samples_per_second); // seconds
-	
-	for(Target_Buffer_Sound_Sample* sample = buffer; sample < buffer + sample_count; ++sample)
-	{
-		sample->left = 0;
-		sample->right = 0;
-		
-		for(s32 i= 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
-		{
-			Sound_Container* slot = s_sound_player.mixer_slots + i;
-			if(slot->id.v)
-			{
-				u64 sample_cursor = (u64)Round(slot->time_cursor * f32(samples_per_second));
-				if(sample_cursor < slot->sound->samples_per_channel)
-				{
-					s16 sample_c1 = *(slot->sound->channel_buffers[0] + sample_cursor);
-					s16 sample_c2 = *(slot->sound->channel_buffers[1] + sample_cursor);
-
-					sample->left += s16(sample_c1 * slot->volume);
-					sample->right += s16(sample_c1 * slot->volume);
-					
-					slot->time_cursor += sample_time * slot->speed;
-				}
-				else
-				{
-					if(slot->play_mode == Play_Mode::loop)
-					{
-						slot->time_cursor = 0;
-					}
-					else
-					{
-						*slot = {};
-					}
-				}
-			}
-		}
-		
-		sample->left = s16(f32(sample->left) * s_sound_player.master_volume);
-		sample->right = s16(f32(sample->right) * s_sound_player.master_volume);        
-	}
+{   
+    f32 sample_time = 1.0f / f32(samples_per_second); // seconds
+    
+    for(Target_Buffer_Sound_Sample* sample = buffer; sample < buffer + sample_count; ++sample)
+    {
+        sample->left = 0;
+        sample->right = 0;
+        
+        for(s32 i= 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
+        {
+            Sound_Container* slot = s_sound_player.mixer_slots + i;
+            if(slot->id.v)
+            {
+                u64 sample_cursor = (u64)Round(slot->time_cursor * f32(samples_per_second));
+                if(sample_cursor < slot->sound->samples_per_channel)
+                {
+                    s16 sample_c1 = *(slot->sound->channel_buffers[0] + sample_cursor);
+                    s16 sample_c2 = *(slot->sound->channel_buffers[1] + sample_cursor);
+                    
+                    sample->left += s16(sample_c1 * slot->volume);
+                    sample->right += s16(sample_c1 * slot->volume);
+                    
+                    slot->time_cursor += sample_time * slot->speed;
+                }
+                else
+                {
+                    if(slot->play_mode == Play_Mode::loop)
+                    {
+                        slot->time_cursor = 0;
+                    }
+                    else
+                    {
+                        *slot = {};
+                    }
+                }
+            }
+        }
+        
+        sample->left = s16(f32(sample->left) * s_sound_player.master_volume);
+        sample->right = s16(f32(sample->right) * s_sound_player.master_volume);        
+    }
 }
 
 

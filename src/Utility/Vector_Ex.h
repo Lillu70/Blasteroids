@@ -471,8 +471,8 @@ static _inline v2f AddY(v2f v, f32 Y)
 
 static _inline v2f V2F(f32 v)
 {
-	v2f result = {v, v};
-	return result;
+    v2f result = {v, v};
+    return result;
 }
 
 static _inline v2f V2F(v2s v)

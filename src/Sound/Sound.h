@@ -40,6 +40,8 @@ enum class Play_Mode : u8
 
 Sound_ID Play_Sound(Sound* sound, Play_Mode play_mode = Play_Mode::ones, f32 volume = 1.0f, f32 speed = 1.0f);
 
+Sound_ID Play_Sound(Sound* sound, Play_Mode play_mode, Range volume_range, Range speed_range);
+
 bool Stop_Sound(Sound_ID id);
 
 void Set_Volume(f32 _volume);

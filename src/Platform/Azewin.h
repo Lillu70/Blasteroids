@@ -1806,13 +1806,13 @@ enum WWindowMessage : s64
 enum WWindowStyle : u32
 {
     WS_BORDER                       = 0x00800000L,
-    WS_CAPTION                      = 0x00C00000L,	
+    WS_CAPTION                      = 0x00C00000L,  
     WS_CHILD                        = 0x40000000L,
     WS_CHILDWINDOW                  = 0x40000000L,
     WS_CLIPCHILDREN                 = 0x02000000L,
     WS_CLIPSIBLINGS                 = 0x04000000L,
     WS_DISABLED                     = 0x08000000L,
-    WS_DLGFRAME	                 = 0x00400000L,
+    WS_DLGFRAME                  = 0x00400000L,
     WS_GROUP                        = 0x00020000L,
     WS_HSCROLL                      = 0x00100000L,
     WS_ICONIC                       = 0x20000000L,
