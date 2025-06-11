@@ -72,9 +72,9 @@ static void save_settings_and_score(bool force_save = false)
         file_data.global_action_data[i] = {action->keyboard_mapping, action->controller_mapping};
     }
     
-    file_data.sfx_volume = s_settings.sfx_volume;
-    file_data.music_volume = s_settings.music_volume;
-    file_data.is_muted = s_settings.is_muted;
+    file_data.sfx_volume    = *s_settings.sfx_volume;
+    file_data.music_volume  = *s_settings.music_volume;
+    file_data.is_muted      = *s_settings.is_muted;
     file_data.is_fullscreen = (Platform_Get_Flags() & Platform_Flags::fullscreen);
     
     // NOTE: Likely not a sensible way of handling errors.
@@ -124,9 +124,9 @@ static bool load_settings_and_score()
         s_global_actions[i].controller_mapping = file_data.global_action_data[i].controller_mapping;
     }
     
-    s_settings.sfx_volume = file_data.sfx_volume;
-    s_settings.music_volume = file_data.music_volume;
-    s_settings.is_muted = file_data.is_muted;
+    *s_settings.sfx_volume = file_data.sfx_volume;
+    *s_settings.music_volume = file_data.music_volume;
+    *s_settings.is_muted = file_data.is_muted;
     Platform_Set_Fullscreen(file_data.is_fullscreen);
     
     return true;

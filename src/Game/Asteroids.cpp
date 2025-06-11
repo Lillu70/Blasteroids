@@ -1,19 +1,15 @@
 
-//#define QUICKSTART
+#define QUICKSTART 0
+#define SPAWN_WAVE 1
 
 /*
+
 TODOS:
-
-Low:
-- Improved wave generation system that get's harder over time.
-- More pickups/weapons
-- Visual asteroid damage effects (hp representation with cracks)
-- Make it so that enemies can't shoot for a bit after entering the screen.
-- Redesign fast enemy.
-
-
-Bug:
-- partially off buffer GUI widget rendering
+    - Improved wave generation system that get's harder over time.
+    - More pickups/weapons
+    - Visual asteroid damage effects (hp representation with cracks)
+    - Make it so that enemies can't shoot for a bit after entering the screen.
+    - Redesign fast enemy.
 
 */
 
@@ -23,6 +19,7 @@ static void pause_game()
     if(!game.is_paused)
     {
         game.is_paused = true;
+        s_sound_player.paused = game.is_paused;
         game.pause_time_start = Platform_Get_Time_Stamp();        
     }
 }
@@ -31,6 +28,7 @@ static void pause_game()
 static void unpause_game_without_destroy_frame()
 {
     game.is_paused = false;
+    s_sound_player.paused = game.is_paused;
     game.total_pause_time += Platform_Get_Time_Stamp() - game.pause_time_start;   
 }
 
@@ -40,6 +38,7 @@ static void unpause_game()
     if(game.is_paused)
     {
         game.is_paused = false;
+        s_sound_player.paused = game.is_paused;
         game.total_pause_time += Platform_Get_Time_Stamp() - game.pause_time_start;
         
         // Keeps poping menus till there are no more menus to pop.
@@ -66,6 +65,7 @@ static void reset_game()
     game = Game();
     particle_system_clear();
     
+    s_sound_player.paused = game.is_paused;
     game.gui_handler.active_theme = temp_theme;
 }
 
@@ -73,6 +73,8 @@ static void reset_game()
 static Entity* spawn_player_ship(v2f pos, u32 color, f64 itime, Weapon::type weapon)
 {
     Entity* entity = add_entity(Entity_Type::player_ship);
+    
+    game.sound_listener_entity_id = entity->id;
     
     entity->color = color;
     entity->position = pos;
@@ -119,7 +121,6 @@ static inline void add_player(u32 color, v2f p, Weapon::type weapon = Weapon::ty
     player->player_id = game.get_next_player_id();
     player->score = 0;
     player->lives = 3;
-    
 }
 
 
@@ -156,7 +157,7 @@ static void start_game()
     
     add_player(color_to_u32(Make_Color(235,00,235)), canvas.get_middle());
     
-    #if 1
+    #if SPAWN_WAVE
     add_timed_event(Timed_Event{ game.game_time + 0.5f, Event_Type::spawn_wave});
     add_timed_event(Timed_Event{ 0, Event_Type::spawn_pickups, 0 });    
     #endif
@@ -175,6 +176,7 @@ static void set_mode_asteroids_sp()
     s_game_mode = Game_Mode::asteroids_sp;
     restart_game();
 }
+
 
 static inline void remove_ui_canvas()
 {
@@ -223,6 +225,8 @@ static void create_enemy_ship(v2f pos, f32 facing_direction, Enemy_Ship::Type ty
         
         case Enemy_Ship::Type::player_clone:
         {
+            game.sound_listener_entity_id = entity->id;
+            
             ai->desired_velocity_magnitude = 200;
             
             entity->color = color_to_u32(MAGENTA);
@@ -407,7 +411,7 @@ static void spawn_new_asteroid(Size size)
 
 static void set_mode_main_menu()
 {
-    #ifdef QUICKSTART
+    #if QUICKSTART
     
     set_mode_asteroids_sp();
     return;
@@ -428,7 +432,7 @@ static void set_mode_main_menu()
     
     gui_create_main_menu();
     
-    //Spawn things.
+    //Spawn things into the background.
     {
         spawn_enemy_ship(Enemy_Ship::Type::player_clone);
         
@@ -486,8 +490,7 @@ static void init_asteroids_game()
             Platform_Free_Memory(sound_loading_memory.memory);
             sound_loading_memory = {};
             
-            //Play_Sound(transient.sounds + Sounds::thruster, Play_Mode::loop);
-            
+            Play_Sound(get(Sounds::music), 0, Play_Mode::loop);
         }
         
         game.timed_events   = (Timed_Event*)transient_mem.push(sizeof(Timed_Event) * game.max_timed_event_count);
@@ -618,130 +621,6 @@ static void clear_ship_input()
         ship->input.apply_thrust = 0;
         ship->input.shoot = 0;
     }
-}
-
-
-static void force_next_wave()
-{
-    // Super janky way of forcing next wave to happen if hostile count is 0.
-    // The system is nice to use, even if not really fit for purpose, but
-    // this kind of loop is still fast and rarely needed. (so maybe it's okey)
-    
-    for(u32 i = 0; i < game.timed_event_count; ++i)
-    {
-        if(game.timed_events[i].type == Event_Type::spawn_wave)
-        {
-            game.timed_events[i].trigger_time = 0;
-            break;
-        }
-    }
-}
-
-
-static f64 generate_wave()
-{
-    game.wave_count += 1;   
-    u32 r = game.rm.random_u32(1000);
-    f64 next_wave_time = 10;
-    u32 large_count = 0, medium_count = 0, small_count = 0;
-    
-    if(r < 10)
-    {
-        large_count = 3;
-        small_count = 11;
-        next_wave_time = 17;
-    }
-    else if(r < 80)
-    {
-        small_count = 22;
-        next_wave_time = 25;
-    }
-    else if(r < 300)
-    {
-        medium_count = 2;
-        large_count = 1;
-        small_count = 4;
-        next_wave_time = 20;
-    }
-    else if(r < 500)
-    {
-        large_count = 1;
-        small_count = 2;
-        next_wave_time = 7;
-    }
-    else if(r < 900)
-    {
-        medium_count = 2;
-        next_wave_time = 5;
-    }
-    else
-    {
-        next_wave_time = 5;
-    }
-    
-    
-    for(u32 p = 0; p < large_count; ++p)
-        spawn_new_asteroid(Size::large);    
-    
-    for(u32 p = 0; p < medium_count; ++p)
-        spawn_new_asteroid(Size::medium);
-    
-    for(u32 p = 0; p < small_count; ++p)
-        spawn_new_asteroid(Size::small);
-    
-    
-    if(next_wave_time <= 10)
-    {
-        game.last_enemy_wave = game.wave_count;
-        
-        u32 default_enemy_count = 0, fast_enemy_count = 0, slow_enemy_count = 0;
-        
-        r = game.rm.random_u32(100);
-        
-        if(r < 50)
-        {
-            default_enemy_count = 1;
-            next_wave_time += 5;
-        }
-        else if(r < 60)
-        {
-            fast_enemy_count = 1;
-            next_wave_time += 5;
-        }
-        else if(r < 70)
-        {
-            slow_enemy_count = 1;
-            next_wave_time += 5;
-        }
-        else if(r < 80)
-        {
-            default_enemy_count = 3;
-            next_wave_time += 7;
-        }
-        else if (r < 95)
-        {
-            slow_enemy_count = 2;
-            next_wave_time += 7;
-        }
-        else
-        {
-            default_enemy_count = 1;
-            fast_enemy_count = 1;
-            slow_enemy_count = 1;
-            next_wave_time += 10;
-        }
-        
-        for(u32 p = 0; p < default_enemy_count; ++p)
-            spawn_enemy_ship(Enemy_Ship::Type::def);    
-        
-        for(u32 p = 0; p < fast_enemy_count; ++p)
-            spawn_enemy_ship(Enemy_Ship::Type::fast);
-        
-        for(u32 p = 0; p < slow_enemy_count; ++p)
-            spawn_enemy_ship(Enemy_Ship::Type::slow);
-    }
-    
-    return next_wave_time;
 }
 
 
@@ -1567,18 +1446,30 @@ static void physics_update()
             
                 if(ship->input.apply_thrust)
                 {
-                    if(!ship->thrust_sound.v)
-                    {
-                        Sound* sound = transient.sounds + Sounds::thruster;
-                        ship->thrust_sound = Play_Sound(sound, Play_Mode::loop);
-                    }
-                    
                     v2f ship_acceleration = {};
                     ship_acceleration.x += -orien_sin;
                     ship_acceleration.y += orien_cos;
                     ship_acceleration *= ship->acceleration_speed;
                     
                     update_position(&entity->position, &entity->velocity, ship_acceleration, game.update_tick);
+                    
+                    f32 inverse_ship_facing_angle = ship->orientation - HALF_PI32;
+                    v2f inverse_ship_facing_vector = 
+                        { cosf(inverse_ship_facing_angle), sinf(inverse_ship_facing_angle) };
+                    
+                    v2f emit_pos = inverse_ship_facing_vector * 5 + entity->position;
+                    
+                    if(!ship->accelerate_hold)
+                    {
+                        ship->accelerate_hold = true;
+                        
+                        while(!Fade_Sound(ship->thrust_sound, 1.f, Fade_Direction::in))
+                        {
+                            ship->thrust_sound = Play_Sound(get(Sounds::thruster), &emit_pos, Play_Mode::loop);
+                        }
+                    }
+                    
+                    Update_Sound_Position(ship->thrust_sound, emit_pos);
                     
                     if(game.game_time >= ship->next_thrust_emit_time)
                     {
@@ -1593,28 +1484,25 @@ static void physics_update()
                         pd.fade_start_time = game.game_time + 0.1f;
                         pd.life_time = game.game_time + 0.3f;
                         
-                        f32 inverse_ship_facing_angle = ship->orientation - HALF_PI32;
-                        v2f inverse_ship_facing_vector = 
-                            { cosf(inverse_ship_facing_angle), sinf(inverse_ship_facing_angle) };
-                        
-                        v2f emit_pos = inverse_ship_facing_vector * 5 + entity->position;
-                        
                         particle_system_emit(emit_pos, cone, &pd, 10);
                     }
                 }
                 else
                 {
-                    if(ship->thrust_sound.v)
+                    Sound_Container* thrust_sound = Find_Sound_By_ID(ship->thrust_sound);
+                    if(thrust_sound && thrust_sound->fade_direction == Fade_Direction::in)
                     {
-                        Stop_Sound(ship->thrust_sound);
-                        ship->thrust_sound = {};
+                        Fade_Sound(ship->thrust_sound, 1.f, Fade_Direction::out);
+                        ship->accelerate_hold = false;                        
                     }
                     
                     update_position(&entity->position, &entity->velocity, game.update_tick);
                 }
                 
                 if(ship->passed_screen && entity->type == Entity_Type::player_ship)
+                {
                     clamp_position_to_rect(&entity->position, canvas.m_dimensions.As<s32>());
+                }
                 
                 else
                 {
@@ -1678,6 +1566,15 @@ static void physics_update()
         }
     }
     
+    if(game.sound_listener_entity_id)
+    {
+        Entity* entity;
+        if(find_entity_by_id(game.sound_listener_entity_id, &entity))
+        {
+            Set_Listener_Location(entity->position);
+        }
+    }
+    
     // Check entity vs entity.
     {
         Entity* end = game.entities + game.active_entity_count;
@@ -1726,7 +1623,7 @@ static void draw_ui()
     if(!ui_canvas.m_pixels)
         return;
     
-    game.draw_ui = false;
+    //game.draw_ui = false;
     
     ui_canvas.clear(color_to_u32(Make_Color(20, 20, 20)));
     ui_canvas.draw_border(color_to_u32(WHITE));
@@ -1741,7 +1638,7 @@ static void draw_ui()
         f32 ammo_percentile = 0;
         
         s32 player_lives = game.player_table[0].lives;
-        score = game.player_table[0].score;
+        score = game.wave_count;//game.player_table[0].score;
         
         Ship* ship = game.player_table[0].ship;
         if(ship && ship->weapon.ammo != inf_ammo)
@@ -1921,10 +1818,17 @@ static bool update_asteroids_game(f64 delta_time, bool& update_surface)
         // Fast forward mode
         if(Platform_Get_Keyboard_Key_Down(Key_Code::T))
         {
-            f32 real_delta = (f32)delta_time;
-            delta_time *= 5;
+            f32 speed_up = 5.f;
             
+            f32 real_delta = (f32)delta_time;
+            delta_time *= speed_up;
+            
+            s_sound_player.time_scale = speed_up;
             game.total_pause_time -= (delta_time - real_delta);
+        }
+        else
+        {
+            s_sound_player.time_scale = 1.f;
         }
         
         u32 update_count = 0;
@@ -1946,7 +1850,8 @@ static bool update_asteroids_game(f64 delta_time, bool& update_surface)
     if(time_stamp >= game.next_draw_time)
     {
         game.next_draw_time = time_stamp + game.draw_frequency;
-        u32 clear_color = color_to_u32(Make_Color(10, 10, 10));
+        u8 c = 25;
+        u32 clear_color = color_to_u32(Make_Color(c, c, c));
         
         canvas.clear(clear_color);
         

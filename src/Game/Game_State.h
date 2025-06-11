@@ -10,51 +10,52 @@ static constexpr u32 max_enemy_ship_count = 3;
 
 struct Game
 {
-    static constexpr u32 max_entity_count = 256;
-    static inline Entity* entities = 0;
+    static constexpr u32 max_entity_count   = 256;
+    static inline Entity* entities          = 0;
     
     u32 active_entity_count = 0;
     u32 zombie_entity_count = 0;
     
-    static constexpr u32 max_player_count = 4;
-    static inline Player* player_table = 0;
-    u32 active_player_count = 0;
+    static constexpr u32 max_player_count   = 4;
+    static inline Player* player_table      = 0;
+    u32 active_player_count                 = 0;
     
-    static constexpr u32 max_laser_count = 10;
-    static inline Laser* laser_table = 0;
-    u32 active_laser_count = 0;
+    static constexpr u32 max_laser_count    = 10;
+    static inline Laser* laser_table        = 0;
+    u32 active_laser_count                  = 0;
     
-    static inline v2s asteroid_area_start = {};
-    static inline v2s asteroid_area_end = {};
+    static inline v2s asteroid_area_start   = {};
+    static inline v2s asteroid_area_end     = {};
     
     static inline Timed_Event* timed_events = 0;
-    u32 timed_event_count = 0;
-    u32 max_timed_event_count = 16;
+    u32 timed_event_count                   = 0;
+    u32 max_timed_event_count               = 16;
     
-    u32 wave_count = 0;
-    u32 last_enemy_wave = 0;
-    u32 active_asteroid_count = 0;
+    u32 sound_listener_entity_id = 0;
+    u32 wave_count              = 0;
+    u32 last_enemy_wave         = 0;
+    u32 active_asteroid_count   = 0;
     u32 active_enemy_ship_count = 0;
-    u32 pickup_count = 0;
+    u32 pickup_count            = 0;
     
-    Random_Machine rm;
+    Random_Machine rm           = {};
     
-    f32 update_tick = 1 / 120.f;
-    f32 draw_frequency = 1 / 60.f;
+    f32 update_tick             = 1 / 120.f;
+    f32 draw_frequency          = 1 / 60.f;
     
-    f64 total_pause_time = 0;
-    f64 pause_time_start = 0;
-    f64 physics_time = 0;
-    f64 game_time = 0;
-    f64 pickup_time_stop_time = 0;
-    f64 next_draw_time = 0;
+    f64 total_pause_time        = 0;
+    f64 pause_time_start        = 0;
+    f64 physics_time            = 0;
+    f64 game_time               = 0;
+    f64 pickup_time_stop_time   = 0;
+    f64 next_draw_time          = 0;
     
     GUI_Handler gui_handler = GUI_Handler();
     
     // TODO: Make these flags.
-    bool draw_ui = true;
-    bool is_paused = false;
-    bool running = true;
+    bool draw_ui    = true;
+    bool is_paused  = false;
+    bool running    = true;
     
     
     u32 get_active_hostile_count()
@@ -75,13 +76,10 @@ private:
 
 struct Settings
 {
-    f32 sfx_volume = 0.8f;
-    f32 music_volume = 0.8f;
+    f32* music_volume   = s_sound_player.volumes + Sound_Types::music;
+    f32* sfx_volume     = s_sound_player.volumes + Sound_Types::effect;
     
-    //CONSIDER: Compres the bools in a flags field 
-    //(because of padding, only worth while if there are more than 4 bools).
-    bool is_muted = 0;
-    
+    bool* is_muted = &s_sound_player.muted;
     bool dirty = 0;
 };
 
@@ -137,10 +135,6 @@ namespace Sounds
     };
 };
 #undef SOUNDS
-
-
-constexpr Range volume_range = {0.9f, 1.2f};
-constexpr Range pitch_range  = {0.9f, 1.1f};
 
 struct Transient_Data
 {
@@ -210,3 +204,6 @@ Sound* get(Sounds::T sound_type)
     
     return result;
 }
+
+static Range volume_range = {0.9f, 1.2f};
+static Range pitch_range  = {0.9f, 1.1f};

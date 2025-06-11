@@ -906,8 +906,8 @@ static v2s Platform_Get_Cursor_Position()
     y = (y - client_rect.bottom) * -1;
     
     // Next convert the screenspace coordinates into pixel space coordinates.
-    x = s32(x * ((f32)s_platform_state.window_dimensions.x / (f32)client_rect.right));
-    y = s32(y * ((f32)s_platform_state.window_dimensions.y / (f32)client_rect.bottom));
+    x = s32(f32(x) / (f32)client_rect.right * s_software_render_target.width);
+    y = s32(f32(y) / (f32)client_rect.bottom * s_software_render_target.height);
     
     return v2s{x, y};
 }
@@ -1179,14 +1179,14 @@ static void Platform_Set_Fullscreen(bool enabled)
                     SetWindowLongA(s_platform_state.window, GWL_STYLE, dwStyle & ~WS_OVERLAPPEDWINDOW);
                     SetWindowPos
                     (
-                     s_platform_state.window,
-                     HWND_TOP,
-                     monitor_info.monitor.left,
-                     monitor_info.monitor.top,
-                     monitor_info.monitor.right - monitor_info.monitor.left,
-                     monitor_info.monitor.bottom - monitor_info.monitor.top,
-                     SWP_NOOWNERZORDER | SWP_FRAMECHANGED
-                     );
+                        s_platform_state.window,
+                        HWND_TOP,
+                        monitor_info.monitor.left,
+                        monitor_info.monitor.top,
+                        monitor_info.monitor.right - monitor_info.monitor.left,
+                        monitor_info.monitor.bottom - monitor_info.monitor.top,
+                        SWP_NOOWNERZORDER | SWP_FRAMECHANGED
+                    );
                 }
             }
         }
@@ -1274,6 +1274,8 @@ static void Platform_Output_Sound()
                 if(bytes_to_write)
                 {
                     u32 samples_to_write = bytes_to_write / s_sound.bytes_per_sample;
+                    
+                    Mem_Zero(s_sound.client_buffer, samples_to_write * sizeof(*s_sound.client_buffer));
                     Output_Sound(s_sound.client_buffer, samples_to_write, s_sound.samples_per_second);
                     
                     void* regions[2];

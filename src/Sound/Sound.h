@@ -33,16 +33,77 @@ struct Sound_ID
 
 enum class Play_Mode : u8
 {
-    ones,
+    once,
     loop
 };
 
 
-Sound_ID Play_Sound(Sound* sound, Play_Mode play_mode = Play_Mode::ones, f32 volume = 1.0f, f32 speed = 1.0f);
+enum class Fade_Direction : u8
+{
+    none = 0,
+    out,
+    in,
+};
 
-Sound_ID Play_Sound(Sound* sound, Play_Mode play_mode, Range volume_range, Range speed_range);
+
+namespace Sound_Types
+{
+    enum T : u32
+    {
+        music,
+        effect,
+        dialog,
+        COUNT
+    };    
+};
+
+
+struct Sound_Container
+{
+    Sound* sound;
+    f32 time_cursor;
+    v2f pos;
+    f32 speed;
+    f32 volume;
+    f64 fade_start;
+    f64 fade_end;
+    Fade_Direction fade_direction;
+    Play_Mode play_mode;
+    Sound_Types::T type;
+    bool has_position;
+    Sound_ID id;
+};
+
+
+struct Sound_Player
+{
+    Sound_Container mixer_slots[32];
+    u64 next_play_id;
+    f32 master_volume;
+    f32 time_scale;
+    f32 volumes[(u32)Sound_Types::T::COUNT];
+    f32 hearing_distance;
+    f32 ear_seperation;
+    v2f listener_location;
+    
+    bool muted;
+    bool paused;
+};
+
+
+void Set_Listener_Location(v2f p);
+
+bool Update_Sound_Position(Sound_ID id, v2f new_pos);
+
+Sound_ID Play_Sound(Sound* sound, v2f* pos = 0, Play_Mode play_mode = Play_Mode::once, Sound_Types::T type = Sound_Types::effect, f32 volume = 1.0f, f32 speed = 1.0f);
+
+Sound_ID Play_Sound(Sound* sound, v2f* pos, Play_Mode play_mode, Sound_Types::T type, Range volume_range, Range speed_range);
+
+bool Fade_Sound(Sound_ID id, f64 fade_in_time, Fade_Direction direction);
 
 bool Stop_Sound(Sound_ID id);
+
+void Stop_All_Sounds();
 
 void Set_Volume(f32 _volume);
 

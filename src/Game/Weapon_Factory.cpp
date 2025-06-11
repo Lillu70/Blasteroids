@@ -112,7 +112,8 @@ static void fire_default_weapon(Entity* source, v2f weapon_mount_p, f32 weapon_d
     
     *entity->alloc_internal<Bullet>() = { source->id, source->type, weapon->bullet_damage };
     
-    Play_Sound(get(Sounds::default_weapon_shoot), Play_Mode::ones, volume_range, pitch_range);
+    Sound* sound = get(Sounds::default_weapon_shoot);
+    Play_Sound(sound, &weapon_mount_p, Play_Mode::once, Sound_Types::effect, volume_range, pitch_range);
 }
 
 
@@ -192,7 +193,8 @@ static void fire_scatter_gun(Entity* source, v2f weapon_mount_p, f32 weapon_dir,
         *entity->alloc_internal<Bullet>() = { source->id, source->type, weapon->pellet_damage };
     }
     
-    Play_Sound(get(Sounds::scatter_gun_shoot), Play_Mode::ones, volume_range, pitch_range);
+    Sound* sound = get(Sounds::scatter_gun_shoot);
+    Play_Sound(sound, &weapon_mount_p, Play_Mode::once, Sound_Types::effect, volume_range, pitch_range);
 }
 
 static char get_display_char_for_weapon(Weapon::type weapon)

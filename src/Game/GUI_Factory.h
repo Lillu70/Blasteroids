@@ -38,21 +38,24 @@ static void gui_set_fullscreen(GUI_Checkbox_Spec* spec)
 
 static void gui_set_is_muted(GUI_Checkbox_Spec* spec)
 {
-    s_settings.is_muted = spec->is_checked;
+    *s_settings.is_muted = spec->is_checked;
+    
     s_settings.dirty = true;
 }
 
 
 static void set_sfx_volume(GUI_Slider_Spec* spec)
 {
-    s_settings.sfx_volume = spec->value;
+    *s_settings.sfx_volume = spec->value;
+    
     s_settings.dirty = true;
 }
 
 
 static void set_music_volume(GUI_Slider_Spec* spec)
 {
-    s_settings.music_volume = spec->value;
+    *s_settings.music_volume = spec->value;
+    
     s_settings.dirty = true;
 }
 
@@ -514,7 +517,7 @@ static void gui_create_settings_menu(u8* back_button_name, void(*create_function
     {
         GUI_Checkbox_Spec checkbox = {};
 
-        checkbox.is_checked = s_settings.is_muted;
+        checkbox.is_checked = *s_settings.is_muted;
         checkbox.on_value_change = gui_set_is_muted;
         
         f32 side = f32(s_gui_theme.font.char_height * text_scale);
@@ -561,7 +564,7 @@ static void gui_create_settings_menu(u8* back_button_name, void(*create_function
     {
         GUI_Slider_Spec slider = {};
 
-        slider.value = s_settings.sfx_volume;
+        slider.value = *s_settings.sfx_volume;
         slider.on_value_change = set_sfx_volume;
     
         
@@ -591,7 +594,7 @@ static void gui_create_settings_menu(u8* back_button_name, void(*create_function
     {
         GUI_Slider_Spec slider = {};
 
-        slider.value = s_settings.music_volume;
+        slider.value = *s_settings.music_volume;
         slider.on_value_change = set_music_volume;
     
         

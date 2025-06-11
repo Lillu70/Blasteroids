@@ -52,6 +52,8 @@ struct Ship
     f32 orientation = 0;
     f32 width = 0;
     
+    bool accelerate_hold = 0;
+    
     Sound_ID thrust_sound = {};
     
     Weapon weapon;

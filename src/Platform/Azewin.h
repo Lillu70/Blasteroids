@@ -945,6 +945,16 @@ extern "C" __declspec(dllimport) b32 __stdcall GetCursorPos(WPoint* point);
 #endif
 
 
+// --- ShowCursor import
+// Source: User32
+#if AZEWIN_COMPILE_USER32 || AZEWIN_DEFAULT_COMPILE || 0
+/*
+
+*/
+extern "C" __declspec(dllimport) s32 __stdcall ShowCursor(b32 show);
+#endif
+
+
 
 // --- GetKeyState import
 // Source: User32

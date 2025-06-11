@@ -45,6 +45,7 @@
 #include "Game/GUI_Factory.h"
 #include "Game/AI.h"
 #include "Game/AI.cpp"
+#include "Game/Waves.h"
 #include "Game/Asteroids.cpp"
 
 
