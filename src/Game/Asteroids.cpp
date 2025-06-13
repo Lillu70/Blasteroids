@@ -1267,8 +1267,6 @@ static void remove_dead_entities()
                         }break;
                     }
                     
-                    Emission_Cone cone = { 0, TAU32, (f32)get_asteroid_properties(asteroid->size).min_radius };
-                    
                     Mesh mesh = asteroid->mesh();
                     particle_system_emit(entity->position, &mesh, &pd, emission_count);
                     
