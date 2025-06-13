@@ -872,7 +872,7 @@ static void player_ship_vs_pickup(Entity* player_ship, Entity* pickup_entity)
         
         murder_entity(pickup_entity, player_ship);
         
-        Particle_Defination pd;
+        Particle_Definition pd;
         
         u32 emission_count = 0;
         pd.full_color = pickup_entity->color;
@@ -1234,7 +1234,7 @@ static void remove_dead_entities()
                 {
                     Asteroid* asteroid = entity->retrive_internal<Asteroid>();
                     
-                    Particle_Defination pd;
+                    Particle_Definition pd;
                     
                     u32 emission_count = 0;
                     pd.full_color = entity->color;
@@ -1269,7 +1269,8 @@ static void remove_dead_entities()
                     
                     Emission_Cone cone = { 0, TAU32, (f32)get_asteroid_properties(asteroid->size).min_radius };
                     
-                    particle_system_emit(entity->position, cone, &pd, emission_count);
+                    Mesh mesh = asteroid->mesh();
+                    particle_system_emit(entity->position, &mesh, &pd, emission_count);
                     
                     game.active_asteroid_count -= 1;
                     mem.free(asteroid->_mesh);
@@ -1285,7 +1286,7 @@ static void remove_dead_entities()
                     mem.free(e_ship->ship.local_mesh);
                     mem.free(e_ship);
                     
-                    Particle_Defination pd;
+                    Particle_Definition pd;
                     
                     u32 emission_count = 0;
                     pd.full_color = entity->color;
@@ -1344,7 +1345,7 @@ static void remove_dead_entities()
                     mem.free(ship->local_mesh);
                     mem.free(ship);
                     
-                    Particle_Defination pd;
+                    Particle_Definition pd;
                     
                     u32 emission_count = 0;
                     pd.full_color = entity->color;
@@ -1477,7 +1478,7 @@ static void physics_update()
                         
                         Emission_Cone cone = { ship->orientation - HALF_PI32, 0.2f };
                         
-                        Particle_Defination pd;
+                        Particle_Definition pd;
                         pd.min_speed = Length(entity->velocity) + 10;
                         pd.max_speed = pd.min_speed + 20;
                         pd.full_color = entity->color; 
@@ -1623,7 +1624,7 @@ static void draw_ui()
     if(!ui_canvas.m_pixels)
         return;
     
-    //game.draw_ui = false;
+    game.draw_ui = false;
     
     ui_canvas.clear(color_to_u32(Make_Color(20, 20, 20)));
     ui_canvas.draw_border(color_to_u32(WHITE));
@@ -1638,7 +1639,7 @@ static void draw_ui()
         f32 ammo_percentile = 0;
         
         s32 player_lives = game.player_table[0].lives;
-        score = game.wave_count;//game.player_table[0].score;
+        score = game.player_table[0].score;
         
         Ship* ship = game.player_table[0].ship;
         if(ship && ship->weapon.ammo != inf_ammo)

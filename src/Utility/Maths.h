@@ -498,7 +498,7 @@ static inline u32 Pow32(u32 base, u32 exp)
 }
 
 
-f32 Distance(v2f p0, v2f p1)
+static inline f32 Distance(v2f p0, v2f p1)
 {
     v2f v = p1 - p0;
     f32 result = Abs(Length(v));
@@ -507,10 +507,24 @@ f32 Distance(v2f p0, v2f p1)
 }
 
 
-s32 Distance(v2s p0, v2s p1)
+static inline s32 Distance(v2s p0, v2s p1)
 {
     v2s v = p1 - p0;
     s32 result = Abs(Length(v));
     
+    return result;
+}
+
+
+static inline v2f Perp_CW(v2f v)
+{
+    v2f result = {v.y, -v.x};
+    return result;
+}
+
+
+static inline v2f Perp_CCW(v2f v)
+{
+    v2f result = {-v.y, v.x};
     return result;
 }

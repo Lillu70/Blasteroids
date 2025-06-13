@@ -20,7 +20,7 @@ struct Emission_Cone
 };
 
 
-struct Particle_Defination
+struct Particle_Definition
 {
     f32 min_speed = 0;
     f32 max_speed = 0;
@@ -48,7 +48,9 @@ static inline void particle_system_clear();
 static void particle_system_emit(
     v2f source_position, 
     Emission_Cone cone, 
-    Particle_Defination* pd, 
+    Particle_Definition* pd, 
     u32 count);
+
+static void particle_system_emit(Mesh* mesh, Particle_Definition* pd, u32 count);
 
 static void particle_system_update_and_draw(Pixel_Canvas* canvas, f32 delta_time, f64 game_time, u32 background_color);

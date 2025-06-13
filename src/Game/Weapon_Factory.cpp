@@ -121,7 +121,7 @@ static void fire_laser(Entity* source, v2f weapon_mount_p, f32 weapon_dir, Weapo
 {
     Assert(source);
     
-    Particle_Defination pd;     
+    Particle_Definition pd;     
     pd.min_speed = 50;
     pd.max_speed = 50;
     pd.fade_start_time = game.game_time + 0.1f;
