@@ -158,6 +158,11 @@ static void fire_laser(Entity* source, v2f weapon_mount_p, f32 weapon_dir, Weapo
         laser.source_id = source->id;
         laser.alive = true;
         
+        
+        Sound* s = get(Sounds::laser_shoot);
+        v2f* p = &weapon_mount_p;
+        laser.sound = Play_Sound(s, p, Play_Mode::loop, Sound_Types::effect, volume_range, pitch_range);
+        
         game.laser_table[laser_count] = laser;
         game.active_laser_count += 1;
     }

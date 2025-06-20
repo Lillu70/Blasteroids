@@ -33,12 +33,12 @@ void Set_Listener_Location(v2f p)
 }
 
 
-Sound_Container* Find_Sound_By_ID(Sound_ID id)
+Mixer_Slot* Find_Sound_By_ID(Sound_ID id)
 {
-    Sound_Container* result = 0;
+    Mixer_Slot* result = 0;
     for(s32 i= 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
     {
-        Sound_Container* slot = s_sound_player.mixer_slots + i;
+        Mixer_Slot* slot = s_sound_player.mixer_slots + i;
         
         if(slot->id.v == id.v)
         {
@@ -55,11 +55,11 @@ bool Update_Sound_Position(Sound_ID id, v2f new_pos)
 {
     bool result = false;
     
-    Sound_Container* slot = Find_Sound_By_ID(id);
+    Mixer_Slot* slot = Find_Sound_By_ID(id);
     if(slot && slot->id.v)
     {
         slot->pos = new_pos;
-        slot->has_position = true;
+        slot->flags |= Sound_Flags::positional;
     }
     
     return result;
@@ -74,34 +74,41 @@ Sound_ID Play_Sound(Sound* sound, v2f* pos, Play_Mode play_mode, Sound_Types::T 
     {
         Assert(sound->samples_per_channel);
         
-        Sound_Container* slot = Find_Sound_By_ID({});
+        Mixer_Slot* slot = Find_Sound_By_ID({});
         if(slot)
         {
             *slot = {};
             id.v = ++s_sound_player.next_play_id;
             
+            u8 flags = Sound_Flags::playing;
+            if(play_mode == Play_Mode::loop)
+            {
+                flags |= Sound_Flags::looping;
+            }
+            
             slot->id = id;
             slot->sound = sound;
-            slot->play_mode = play_mode;
-            slot->volume = volume;
-            slot->speed = speed;
+            
             slot->type = type;
+            slot->speed = speed;
+            slot->volume = volume;
             
             if(pos)
             {
                 slot->pos = *pos;
-                slot->has_position = true;
+                flags |= Sound_Flags::positional;
             }
-            else
-            {
-                slot->has_position = false;   
-            }
+            
+            slot->flags = flags;
         }
         else
         {
             // There are no empty slots...
             // What to do here???
+            // - A) Override one of the sounds?
+            // - B) Just skip playing this one?
             
+            // Right not just crash to notify that this did indeed happen.
             Terminate;
         }
     }
@@ -125,7 +132,7 @@ bool Stop_Sound(Sound_ID id)
 {
     bool result = false;
     
-    Sound_Container* slot = Find_Sound_By_ID(id);
+    Mixer_Slot* slot = Find_Sound_By_ID(id);
     if(slot)
     {
         *slot = {};
@@ -140,12 +147,31 @@ bool Fade_Sound(Sound_ID id, f64 fade_in_time, Fade_Direction direction)
 {
     bool result = false;
     
-    Sound_Container* slot = Find_Sound_By_ID(id);
+    Mixer_Slot* slot = Find_Sound_By_ID(id);
     if(slot && slot->id.v)
     {
         slot->fade_start = Platform_Get_Time_Stamp();
         slot->fade_end = slot->fade_start + fade_in_time;
-        slot->fade_direction = direction;
+        
+        u8 clear_mask = Sound_Flags::fading_in | Sound_Flags::fading_out;
+        Inverse_Bit_Mask(&slot->flags, clear_mask);
+        switch(direction)
+        {
+            case Fade_Direction::in:
+            {
+                slot->flags |= Sound_Flags::fading_in;
+            }break;
+            
+            case Fade_Direction::out:
+            {
+                slot->flags |= Sound_Flags::fading_out;
+            }break;
+        }
+        
+        Assert(!((slot->flags & Sound_Flags::fading_in) && (slot->flags & Sound_Flags::fading_out)));
+        
+        slot->flags |= Sound_Flags::playing;
+        
         result = true;
     }
     
@@ -161,6 +187,51 @@ void Stop_All_Sounds()
         if(id.v)
         {
             Stop_Sound(id);
+        }
+    }
+}
+
+
+void Stop_All_Sounds_Of_Type(Sound_Types::T type)
+{
+    for(s32 i = 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
+    {
+        Mixer_Slot* slot = s_sound_player.mixer_slots + i;
+        
+        Sound_ID id = slot->id;
+        if(id.v && slot->type == type)
+        {
+            Stop_Sound(id);
+        }
+    }
+}
+
+
+void Pause_All_Sounds_Of_Type(Sound_Types::T type)
+{
+    for(s32 i = 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
+    {
+        Mixer_Slot* slot = s_sound_player.mixer_slots + i;
+        
+        Sound_ID id = slot->id;
+        if(id.v && slot->type == type)
+        {
+            Inverse_Bit_Mask(&slot->flags, Sound_Flags::playing);
+        }
+    }
+}
+
+
+void Continue_All_Sounds_Of_Type(Sound_Types::T type)
+{
+    for(s32 i = 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
+    {
+        Mixer_Slot* slot = s_sound_player.mixer_slots + i;
+        
+        Sound_ID id = slot->id;
+        if(id.v && slot->type == type)
+        {
+            slot->flags |= Sound_Flags::playing;
         }
     }
 }
@@ -185,21 +256,46 @@ void Output_Sound(Target_Buffer_Sound_Sample* buffer, u64 sample_count, u32 samp
 
         for(s32 i = 0; i < Array_Lenght(s_sound_player.mixer_slots); ++i)
         {
-            Sound_Container* slot = s_sound_player.mixer_slots + i;
-            if(slot->id.v && slot->sound->channel_buffers[0])
+            Mixer_Slot* slot = s_sound_player.mixer_slots + i;
+            if(slot->id.v && slot->sound->channel_buffers[0] && (slot->flags & Sound_Flags::playing))
             {
                 u32 type = u32(slot->type);
                 Assert(type < u32(Sound_Types::T::COUNT));
                 
                 f32 type_volume = s_sound_player.volumes[type];
                 f32 volume = type_volume * slot->volume * master_volume;
-                if(u32(slot->fade_direction))
+                if((slot->flags & Sound_Flags::fading_in) || (slot->flags & Sound_Flags::fading_out))
                 {
                     f32 r = slot->fade_end - slot->fade_start;
-                    f32 t = Clamp_Zero_To_One((now - slot->fade_start) / r);
-                    if(slot->fade_direction == Fade_Direction::out)
+                    f32 t2 = (now - slot->fade_start) / r;
+                    f32 t = Clamp_Zero_To_One(t2);
+                    if(slot->flags & Sound_Flags::fading_out)
                     {
                         t = Inv(t);
+                        
+                        // pause or kill sound after it's been faded out.
+                        if(t2 > 1.0)
+                        {
+                            if(slot->flags & Sound_Flags::looping)
+                            {
+                                u8 mask = Sound_Flags::fading_out | Sound_Flags::playing;
+                                Inverse_Bit_Mask(&slot->flags, mask);
+                            }
+                            else
+                            {
+                                Stop_Sound(slot->id);
+                            }
+                            
+                            continue; // <--- NOTE THE CONTINUE HERE!
+                        }
+                    }
+                    else
+                    {
+                        // Remove the fade in flag after it's been faded in.
+                        if(t2 > 1.0)
+                        {
+                            Inverse_Bit_Mask(&slot->flags, Sound_Flags::fading_in);
+                        }
                     }
                     
                     volume *= t;
@@ -210,8 +306,10 @@ void Output_Sound(Target_Buffer_Sound_Sample* buffer, u64 sample_count, u32 samp
                 f32 rd = Distance(rpos, slot->pos);
                 f32 ld = Distance(lpos, slot->pos);
                 
-                f32 r_volume = slot->has_position? Inv(Clamp_Zero_To_One(rd / hearing_d)) : 1.f;
-                f32 l_volume = slot->has_position? Inv(Clamp_Zero_To_One(ld / hearing_d)) : 1.f;
+                bool has_position = slot->flags & Sound_Flags::positional;
+                
+                f32 r_volume = has_position? Inv(Clamp_Zero_To_One(rd / hearing_d)) : 1.f;
+                f32 l_volume = has_position? Inv(Clamp_Zero_To_One(ld / hearing_d)) : 1.f;
                 
                 for(Target_Buffer_Sound_Sample* sample = buffer; sample < buffer + sample_count; ++sample)
                 {
@@ -228,7 +326,7 @@ void Output_Sound(Target_Buffer_Sound_Sample* buffer, u64 sample_count, u32 samp
                     }
                     else
                     {
-                        if(slot->play_mode == Play_Mode::loop)
+                        if(slot->flags & Sound_Flags::looping)
                         {
                             slot->time_cursor = 0;
                         }

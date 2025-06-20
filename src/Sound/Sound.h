@@ -48,7 +48,7 @@ enum class Fade_Direction : u8
 
 namespace Sound_Types
 {
-    enum T : u32
+    enum T : u8
     {
         music,
         effect,
@@ -58,33 +58,49 @@ namespace Sound_Types
 };
 
 
-struct Sound_Container
+namespace Sound_Flags
+{
+    enum T : u8
+    {
+        playing     = 1 << 0,
+        muted       = 1 << 1,
+        positional  = 1 << 2,
+        looping     = 1 << 3,
+        fading_in   = 1 << 4,
+        fading_out  = 1 << 5,
+    };
+};
+
+
+struct Mixer_Slot
 {
     Sound* sound;
+    Sound_ID id;
     f32 time_cursor;
-    v2f pos;
+    
+    v2f pos; // 2D Sound
+    
     f32 speed;
     f32 volume;
+    
     f64 fade_start;
     f64 fade_end;
-    Fade_Direction fade_direction;
-    Play_Mode play_mode;
+    
     Sound_Types::T type;
-    bool has_position;
-    Sound_ID id;
+    u8 flags;
 };
 
 
 struct Sound_Player
 {
-    Sound_Container mixer_slots[32];
+    Mixer_Slot mixer_slots[32];
     u64 next_play_id;
     f32 master_volume;
     f32 time_scale;
-    f32 volumes[(u32)Sound_Types::T::COUNT];
     f32 hearing_distance;
     f32 ear_seperation;
     v2f listener_location;
+    f32 volumes[Sound_Types::COUNT];
     
     bool muted;
     bool paused;
@@ -103,7 +119,13 @@ bool Fade_Sound(Sound_ID id, f64 fade_in_time, Fade_Direction direction);
 
 bool Stop_Sound(Sound_ID id);
 
+// TODO: Clear up the terminology.
+// Sounds have multiple states and "stop" here is more like remove from the mixer and free up the slot.
 void Stop_All_Sounds();
+void Stop_All_Sounds_Of_Type(Sound_Types::T type);
+
+void Continue_All_Sounds_Of_Type(Sound_Types::T type);
+void Pause_All_Sounds_Of_Type(Sound_Types::T type);
 
 void Set_Volume(f32 _volume);
 

@@ -5,7 +5,6 @@
 /*
 
 TODOS:
-    - Improved wave generation system that get's harder over time.
     - More pickups/weapons
     - Visual asteroid damage effects (hp representation with cracks)
     - Make it so that enemies can't shoot for a bit after entering the screen.
@@ -19,8 +18,9 @@ static void pause_game()
     if(!game.is_paused)
     {
         game.is_paused = true;
-        s_sound_player.paused = game.is_paused;
-        game.pause_time_start = Platform_Get_Time_Stamp();        
+        game.pause_time_start = Platform_Get_Time_Stamp();
+        
+        Pause_All_Sounds_Of_Type(Sound_Types::effect);
     }
 }
 
@@ -38,12 +38,15 @@ static void unpause_game()
     if(game.is_paused)
     {
         game.is_paused = false;
-        s_sound_player.paused = game.is_paused;
         game.total_pause_time += Platform_Get_Time_Stamp() - game.pause_time_start;
+        
+        Continue_All_Sounds_Of_Type(Sound_Types::effect);
         
         // Keeps poping menus till there are no more menus to pop.
         while(game.gui_handler.active_frame.widget_allocator.memory)
+        {
             gui_pop_frame(&game.gui_handler, &mem);
+        }
     }
 }
 
@@ -56,7 +59,7 @@ static void quit_to_desktop()
 
 static void reset_game()
 {
-    Stop_All_Sounds();
+    Stop_All_Sounds_Of_Type(Sound_Types::effect);
     
     GUI_Theme* temp_theme = game.gui_handler.active_theme;
     
@@ -450,7 +453,7 @@ static void init_asteroids_game()
     v2s screen_dim = {620, 480};
     Platform_Init("Blasteroids", {}, screen_dim, false, false);
     
-    u32 game_state_memory_size = MiB;
+    u32 game_state_memory_size = 50*MiB;
     void* game_state_memory = Platform_Allocate_Memory(game_state_memory_size, &game_state_memory_size);
     
     
@@ -478,19 +481,17 @@ static void init_asteroids_game()
             constexpr u32 kilobyte = 1024 * 1024;
             
             Linear_Allocator sound_loading_memory;
-            u32 sound_loading_memory_size = 100 * kilobyte;
+            u32 sound_loading_memory_size = 10000 * kilobyte;
             u8* memory = (u8*)Platform_Allocate_Memory(sound_loading_memory_size, &sound_loading_memory_size);
             sound_loading_memory.init(memory, sound_loading_memory_size);
-            
             
             for(u32 i = 0; i < Sounds::COUNT; ++i)
             {
                 transient.sounds[i] = Load_Wave(s_sound_names[i], &sound_loading_memory, &allocator);
             }
+            
             Platform_Free_Memory(sound_loading_memory.memory);
             sound_loading_memory = {};
-            
-            Play_Sound(get(Sounds::music), 0, Play_Mode::loop);
         }
         
         game.timed_events   = (Timed_Event*)transient_mem.push(sizeof(Timed_Event) * game.max_timed_event_count);
@@ -517,6 +518,9 @@ static void init_asteroids_game()
     screen_canvas = Pixel_Canvas(transient.pixel_buffer, transient.pixel_buffer_dimensions);
     
     game.gui_handler.active_theme = &s_gui_theme;
+    
+    Sound_ID music_id = Play_Sound(get(Sounds::music), 0, Play_Mode::loop, Sound_Types::music);
+    Fade_Sound(music_id, 3.0, Fade_Direction::in);
     
     set_mode_main_menu();
 }
@@ -626,7 +630,7 @@ static void clear_ship_input()
 
 static Pickup generate_pickup()
 {
-    // TODO: Consider pickup factory file, if this ends up clutterly.
+    // CONSIDER: pickup factory file, if this ends up clutterly.
     Pickup result;
     
     u32 r = game.rm.random_u32(100);
@@ -1004,6 +1008,7 @@ static void check_lasers_againt_targets()
     {
         if(game.laser_table[i].alive == false)
         {
+            Stop_Sound(game.laser_table[i].sound);
             game.active_laser_count -= 1;
             game.laser_table[i] = game.laser_table[game.active_laser_count];
             i -= 1;
@@ -1011,12 +1016,17 @@ static void check_lasers_againt_targets()
         }
         else
         {
-            Laser* laser = &game.laser_table[i];
+            Laser* laser = game.laser_table + i;
+            
+            // NOTE: Laser weapons have to; on every frame keep set their alive flag to be true,
+            // they are killed.
             laser->alive = false;
             
             v2f laser_pos = laser->pos;
             v2f laser_dir = { sinf(laser->dir) * -1, cosf(laser->dir) };
             //Assert(laser_dir != 0);
+            
+            Update_Sound_Position(laser->sound, laser_pos);
             
             if(point_inside_rect(laser_pos, canvas.m_dimensions) == false)
             {
@@ -1222,6 +1232,10 @@ static void check_lasers_againt_targets()
 
 static void remove_dead_entities()
 {
+    // NOTE: For future projects. This kind of instant remove after death is not really a good idea.
+    // If I had corpses, or death animations, this would make that much more difficult than need be.
+    // ...but that said, this project is simple enough that I don't feel the need to change it here.
+    
     for(u32 i = 0; i < game.active_entity_count && game.zombie_entity_count > 0; ++i)
     {
         Entity* entity = game.entities + i;
@@ -1240,14 +1254,20 @@ static void remove_dead_entities()
                     pd.full_color = entity->color;
                     pd.fade_start_time = game.game_time + 1;
                     pd.life_time = game.game_time + 2;
+                    Range explosion_volume = {};
                     
                     switch(asteroid->size)
                     {
+                        
                         case Size::small:
                         {
                             pd.min_speed = 10;
                             pd.max_speed = 30;
+                            
                             emission_count = 10;
+                            
+                            explosion_volume = {0.4f, 0.9};
+
                         }break;
                         
                         case Size::medium:
@@ -1256,6 +1276,8 @@ static void remove_dead_entities()
                             pd.max_speed = 40;
                             
                             emission_count = 20;
+                            
+                            explosion_volume = {0.7f, 1.1};
                         }break;
                         
                         case Size::large:
@@ -1264,6 +1286,8 @@ static void remove_dead_entities()
                             pd.max_speed = 50;
                             
                             emission_count = 30;
+                            
+                            explosion_volume = {0.9f, 1.5};
                         }break;
                     }
                     
@@ -1272,6 +1296,10 @@ static void remove_dead_entities()
                     
                     game.active_asteroid_count -= 1;
                     mem.free(asteroid->_mesh);
+                    
+                    Sound* s = get(Sounds::asteroid_explosion);
+                    v2f* p = &entity->position;
+                    Play_Sound(s, p, Play_Mode::once, Sound_Types::effect, explosion_volume, pitch_range);
                     
                 }break;
                 
@@ -1488,13 +1516,17 @@ static void physics_update()
                 }
                 else
                 {
-                    Sound_Container* thrust_sound = Find_Sound_By_ID(ship->thrust_sound);
-                    if(thrust_sound && thrust_sound->fade_direction == Fade_Direction::in)
+                    Mixer_Slot* thrust_sound = Find_Sound_By_ID(ship->thrust_sound);
+                    if(thrust_sound)
                     {
-                        Fade_Sound(ship->thrust_sound, 1.f, Fade_Direction::out);
-                        ship->accelerate_hold = false;                        
+                        bool playing = (thrust_sound->flags & Sound_Flags::playing);
+                        if(Bit_Not_Set(thrust_sound->flags, Sound_Flags::fading_out) && playing)
+                        {
+                            Fade_Sound(ship->thrust_sound, 1.f, Fade_Direction::out);
+                            ship->accelerate_hold = false;
+                        }
+                        
                     }
-                    
                     update_position(&entity->position, &entity->velocity, game.update_tick);
                 }
                 
@@ -1547,11 +1579,17 @@ static void physics_update()
                 
                 bool on_screen = point_inside_rect(entity->position, canvas.m_dimensions);
                 if(on_screen)
+                {
                     pickup->passed_screen = true;
+                }
                 else if(pickup->passed_screen)
+                {
                     kill_entity(entity);
+                }
                 else
+                {
                     clamp_position_to_rect(&entity->position, game.asteroid_area_start, game.asteroid_area_end);
+                }
             }break;
             
             case Entity_Type::asteroid:

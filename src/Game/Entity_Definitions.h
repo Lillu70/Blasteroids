@@ -233,6 +233,7 @@ struct Laser
     u32 color = 0;
     u32 source_id = 0;
     Entity_Type impact_target_type = Entity_Type::none;
+    Sound_ID sound;
     bool alive = false;
 };
 
