@@ -160,10 +160,10 @@ static void start_game()
     
     add_player(color_to_u32(Make_Color(235,00,235)), canvas.get_middle());
     
-    #if SPAWN_WAVE
+#if SPAWN_WAVE
     add_timed_event(Timed_Event{ game.game_time + 0.5f, Event_Type::spawn_wave});
     add_timed_event(Timed_Event{ 0, Event_Type::spawn_pickups, 0 });    
-    #endif
+#endif
 }
 
 
@@ -414,12 +414,12 @@ static void spawn_new_asteroid(Size size)
 
 static void set_mode_main_menu()
 {
-    #if QUICKSTART
+#if QUICKSTART
     
     set_mode_asteroids_sp();
     return;
     
-    #endif
+#endif
     
     Random_Machine::seed = (u32)game.game_time;
     
@@ -510,6 +510,9 @@ static void init_asteroids_game()
     
     if(!load_settings_and_score())
     {
+        *s_settings.sfx_volume = 0.5f;
+        *s_settings.music_volume = 0.5f;
+        
         load_default_menu_action();
         load_default_game_action();
         load_default_global_actions();
@@ -686,7 +689,7 @@ static void process_timed_events()
                     u32* player_id = (u32*)timed_events[i].payload;
                     Player* player = 0;
                     for(u32 p = 0; p < game.active_player_count; ++p)
-                    if(game.player_table[p].player_id == *player_id)
+                        if(game.player_table[p].player_id == *player_id)
                     {
                         player = &game.player_table[p];
                         break;
@@ -772,7 +775,7 @@ static void bullet_vs_asteroid(Entity* bullet_entity, Entity* asteroid_entity)
         
         // Also kill the asteroid!
         if(asteroid->hp <= 0)
-        murder_entity(asteroid_entity, bullet->source_id);
+            murder_entity(asteroid_entity, bullet->source_id);
     }
 }
 
@@ -825,10 +828,10 @@ static void player_ship_vs_asteroid(Entity* player_ship_entity, Entity* asteroid
     
     Rect ship_bounding_box = create_rect_center_halfdim({0,0}, V2F(ship->width));
     bool bb_overlap = Rects_Overlap(
-        player_ship_entity->position, 
-        ship_bounding_box, 
-        asteroid_entity->position, 
-        asteroid->bounding_box);
+                                    player_ship_entity->position, 
+                                    ship_bounding_box, 
+                                    asteroid_entity->position, 
+                                    asteroid->bounding_box);
     
     if(bb_overlap && meshes_overlap2(player_ship_entity->position, ship_mesh, asteroid_entity->position, asteroid->mesh()))
     {
@@ -862,16 +865,16 @@ static void player_ship_vs_pickup(Entity* player_ship, Entity* pickup_entity)
         switch(pickup->_type)
         {
             case Pickup::type::weapon:
-                ship->weapon = create_weapon((Weapon::type)pickup->data);
-                break;
+            ship->weapon = create_weapon((Weapon::type)pickup->data);
+            break;
             
             case Pickup::type::life:
-                player->lives += 1;
-                break;
+            player->lives += 1;
+            break;
             
             case Pickup::type::time_stop:
-                game.pickup_time_stop_time = game.game_time + 5.f;
-                break;
+            game.pickup_time_stop_time = game.game_time + 5.f;
+            break;
         }
         
         murder_entity(pickup_entity, player_ship);
@@ -906,10 +909,10 @@ static void enemy_ship_vs_asteroid(Entity* enemy_ship_entity, Entity* asteroid_e
     Asteroid* asteroid = asteroid_entity->retrive_internal<Asteroid>();
     
     bool bb_overlap = Rects_Overlap(
-        enemy_ship_entity->position, 
-        ship_bounding_box, 
-        asteroid_entity->position, 
-        asteroid->bounding_box);
+                                    enemy_ship_entity->position, 
+                                    ship_bounding_box, 
+                                    asteroid_entity->position, 
+                                    asteroid->bounding_box);
     
     Mesh ship_mesh = { ship->local_mesh, ship->mesh.p_count };
     if(bb_overlap && meshes_overlap(enemy_ship_entity->position, ship_mesh, asteroid_entity->position, asteroid->mesh()))
@@ -957,12 +960,12 @@ static inline bool check_interactions(Entity* a, Entity* b)
             switch(b->type)
             {
                 case Entity_Type::asteroid:
-                    bullet_vs_asteroid(a, b);
-                    return true;
+                bullet_vs_asteroid(a, b);
+                return true;
                 
                 case Entity_Type::bullet:
-                    bullet_vs_bullet(a, b);
-                    return true;
+                bullet_vs_bullet(a, b);
+                return true;
                 
                 case Entity_Type::enemy_ship:
                 case Entity_Type::player_ship:
@@ -977,12 +980,12 @@ static inline bool check_interactions(Entity* a, Entity* b)
             switch(b->type)
             {
                 case Entity_Type::asteroid:
-                    player_ship_vs_asteroid(a, b);
-                    return true;
-            
+                player_ship_vs_asteroid(a, b);
+                return true;
+                
                 case Entity_Type::pickup:
-                    player_ship_vs_pickup(a, b);
-                    return true;
+                player_ship_vs_pickup(a, b);
+                return true;
             }
             
         }break;
@@ -992,8 +995,8 @@ static inline bool check_interactions(Entity* a, Entity* b)
             switch(b->type)
             {
                 case Entity_Type::asteroid:
-                    enemy_ship_vs_asteroid(a, b);
-                    return true;
+                enemy_ship_vs_asteroid(a, b);
+                return true;
             }
         }break;
     }
@@ -1034,7 +1037,7 @@ static void check_lasers_againt_targets()
                 laser->last_dir = laser_dir;
                 continue;
             }
-        
+            
             laser->impact_target_type = Entity_Type::none;
             
             f32 t = F32_MAX;
@@ -1141,7 +1144,7 @@ static void check_lasers_againt_targets()
                         bool impact = false;
                         if(laser_dir != laser->last_dir)
                         {
-                        
+                            
                             v2f _laser_mesh[3] = { laser_pos, laser_pos + laser_dir * 1000, laser_pos + laser->last_dir * 1000 };
                             Mesh laser_mesh = { &_laser_mesh[0], 3};
                             
@@ -1267,7 +1270,7 @@ static void remove_dead_entities()
                             emission_count = 10;
                             
                             explosion_volume = {0.4f, 0.9};
-
+                            
                         }break;
                         
                         case Size::medium:
@@ -1359,9 +1362,9 @@ static void remove_dead_entities()
                         save_settings_and_score(true);
                         
                         if(score_ranking == 1)
-                        event.type = Event_Type::game_over_highscore;
+                            event.type = Event_Type::game_over_highscore;
                         else                            
-                        event.type = Event_Type::game_over;
+                            event.type = Event_Type::game_over;
                     }
                     
                     add_timed_event(event);
@@ -1391,7 +1394,7 @@ static void remove_dead_entities()
                 case Entity_Type::pickup:
                 {
                     game.pickup_count -= 1;
-                
+                    
                 }break;
             }
             
@@ -1452,7 +1455,7 @@ static void physics_update()
         switch(entity->type)
         {
             case Entity_Type::enemy_ship:
-                handle_enemy_AI(entity);
+            handle_enemy_AI(entity);
             
             case Entity_Type::player_ship:
             {
@@ -1469,8 +1472,8 @@ static void physics_update()
                     
                     rotate_local_mesh(ship->local_mesh, ship->mesh, orien_cos, orien_sin);
                 }
-            
-            
+                
+                
                 if(ship->input.apply_thrust)
                 {
                     v2f ship_acceleration = {};
@@ -1482,7 +1485,7 @@ static void physics_update()
                     
                     f32 inverse_ship_facing_angle = ship->orientation - HALF_PI32;
                     v2f inverse_ship_facing_vector = 
-                        { cosf(inverse_ship_facing_angle), sinf(inverse_ship_facing_angle) };
+                    { cosf(inverse_ship_facing_angle), sinf(inverse_ship_facing_angle) };
                     
                     v2f emit_pos = inverse_ship_facing_vector * 5 + entity->position;
                     
@@ -1490,9 +1493,11 @@ static void physics_update()
                     {
                         ship->accelerate_hold = true;
                         
-                        while(!Fade_Sound(ship->thrust_sound, 1.f, Fade_Direction::in))
+                        Sound* sound = get(Sounds::thruster);
+                        
+                        while(sound->memory && !Fade_Sound(ship->thrust_sound, 1.f, Fade_Direction::in))
                         {
-                            ship->thrust_sound = Play_Sound(get(Sounds::thruster), &emit_pos, Play_Mode::loop);
+                            ship->thrust_sound = Play_Sound(sound, &emit_pos, Play_Mode::loop);
                         }
                     }
                     
@@ -1568,7 +1573,7 @@ static void physics_update()
                 {
                     kill_entity(entity);
                 }
-            
+                
             }break;
             
             
@@ -1702,7 +1707,7 @@ static void draw_ui()
             u32 char_count = (sizeof(buffer) - text_offset - 1); 
             s32 x_offset = char_count * s_terminus_font_char_width;
             if(char_count % 2 != 0)
-            x_offset += s_terminus_font_char_width / 2;
+                x_offset += s_terminus_font_char_width / 2;
             v2s p = { (s32)(ui_canvas.m_dimensions.x / 2) - x_offset, -3 };
             
             ui_canvas.draw_text((char*)score_text, p, ui_color, font, char_width, char_height, {2, 2});

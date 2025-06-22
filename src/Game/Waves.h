@@ -56,7 +56,8 @@ static inline void spawn_enemy_ships(u32 basic, u32 scatter, u32 fast)
     
     for(u32 p = 0; p < fast; ++p)
     {
-        spawn_enemy_ship(Enemy_Ship::Type::fast);
+        // NOTE: The fast enemy at this point is not usable, sooo just replace it with the default.
+        spawn_enemy_ship(Enemy_Ship::Type::def);
     }
 }
 
@@ -101,7 +102,7 @@ static f64 spawn_increasingly_difficult_wave()
     u32 basic_enemy     = 0;
     u32 scatter_enemy   = 0;
     u32 fast_enemy      = 0;
-
+    
     f64 next_wave_time  = 1;
     
     f64 x = f64(game.wave_count);
@@ -115,17 +116,17 @@ static f64 spawn_increasingly_difficult_wave()
     u32 r = rm->random_u32(u32(rp));
     u32 c = 0;
     
-    #if 0       // TUTORIAL
+#if 0       // TUTORIAL
     goto TUTORIAL;
-    #endif
+#endif
     
-    #if 0       // MEDIUM
+#if 0       // MEDIUM
     goto MEDIUM;
-    #endif
+#endif
     
-    #if 0       // HARD
+#if 0       // HARD
     goto HARD;
-    #endif
+#endif
     
     
     if(0);
@@ -148,9 +149,15 @@ static f64 spawn_increasingly_difficult_wave()
         {
             next_wave_time = 15;
             u32 rmax = 45;
+            
             if(game.wave_count > 5)             
             {
-                rmax += 10;
+                rmax += 5;
+            }
+            
+            if(game.wave_count > 10)             
+            {
+                rmax += 5;
             }
             
             r = rm->random_u32(rmax);
@@ -169,7 +176,7 @@ static f64 spawn_increasingly_difficult_wave()
             {
                 large_asteroid = 1;
             }
-            else if(r < add_and_return(&c, 10))
+            else
             {
                 Assert(game.wave_count > 5);
                 basic_enemy = 1;
@@ -191,7 +198,7 @@ static f64 spawn_increasingly_difficult_wave()
         if(game.active_asteroid_count < 15)
         {
             next_wave_time = 8;
-            u32 rmax = 155;
+            u32 rmax = 130;
             r = rm->random_u32(rmax);
             c = 0;
             if(0);
@@ -199,18 +206,18 @@ static f64 spawn_increasingly_difficult_wave()
             {
                 small_asteroid = 14;
             }
-            else if(r < add_and_return(&c, 30))
+            else if(r < add_and_return(&c, 15))
             {
                 large_asteroid  = 1;
                 medium_asteroid = 2;
                 small_asteroid  = 3;
             }
-            else if(r < add_and_return(&c, 30))
+            else if(r < add_and_return(&c, 15))
             {
                 medium_asteroid = 2;
                 small_asteroid  = 5;
             }
-            else if(r < add_and_return(&c, 30))
+            else if(r < add_and_return(&c, 10))
             {
                 large_asteroid = 3;
             }
@@ -231,6 +238,7 @@ static f64 spawn_increasingly_difficult_wave()
                 }
                 basic_enemy = 1;
             }
+            
             else if(r < add_and_return(&c, 15))
             {
                 if(game.active_asteroid_count < 5 && rm->random_u32(2))
@@ -241,6 +249,7 @@ static f64 spawn_increasingly_difficult_wave()
                 
                 scatter_enemy = 1;
             }
+            
             else
             {
                 if(game.active_asteroid_count < 5 && rm->random_u32(2))
@@ -349,7 +358,7 @@ static f64 generate_wave()
 {
     game.wave_count += 1;
     f64 next_wave_time = spawn_increasingly_difficult_wave();
-    #if 0
+#if 0
     u32 r = game.rm.random_u32(1000);
     f64 next_wave_time = 10;
     u32 large_count = 0, medium_count = 0, small_count = 0;
@@ -449,6 +458,6 @@ static f64 generate_wave()
             spawn_enemy_ship(Enemy_Ship::Type::slow);
         }
     }
-    #endif
+#endif
     return next_wave_time;
 }

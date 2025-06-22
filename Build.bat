@@ -1,5 +1,6 @@
 @echo off
 if not exist "bin\" mkdir "bin"
+if not exist "bin\sounds\" mkdir "bin\sounds\"
 
 cls
 pushd bin
