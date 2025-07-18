@@ -3,30 +3,30 @@
 
 
 #pragma pack(push, 1)
-struct Action_Data
-{
-    Key_Code keyboard_mapping;
-    Button controller_mapping;
-};
-
-
-struct File_Data
-{
-    static inline char file_name[] = "Blasteroids.data";
-    static constexpr u32 file_format_version = 1;
+    struct Action_Data
+    {
+        Key_Code keyboard_mapping;
+        Button controller_mapping;
+    };
     
-    u32 version;
-    u32 highscores[s_max_highscore_count];
-    Action_Data game_action_data[(u32)Game_Actions::COUNT];
-    Action_Data menu_action_data[(u32)GUI_Menu_Actions::COUNT];
-    Action_Data global_action_data[(u32)Global_Actions::COUNT];
     
-    f32 sfx_volume;
-    f32 music_volume;
-    
-    bool is_muted;
-    bool is_fullscreen;
-};
+    struct File_Data
+    {
+        static inline char* file_name = "Blasteroids.data";
+        static inline constexpr u32 file_format_version = 1;
+        
+        u32 version;
+        u32 highscores[s_max_highscore_count];
+        Action_Data game_action_data[(u32)Game_Actions::COUNT];
+        Action_Data menu_action_data[(u32)GUI_Menu_Actions::COUNT];
+        Action_Data global_action_data[(u32)Global_Actions::COUNT];
+        
+        f32 sfx_volume;
+        f32 music_volume;
+        
+        bool is_muted;
+        bool is_fullscreen;
+    };
 #pragma pack(pop)
 
 
@@ -135,6 +135,6 @@ static bool load_settings_and_score()
             }
         }
     }
-    
+
     return result;
 }
